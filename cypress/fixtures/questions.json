@@ -1,0 +1,44 @@
+{
+  "1": {
+    "Internship prep": {
+      "Beginner": "An interviewer asks: what is a data pipeline, and what could break in it when the database structure changes in a new release?",
+      "Experienced": "An interviewer asks: how do you make a pipeline safe to re-run, so that a retry or rollback never duplicates or loses data?"
+    },
+    "Keep up with trends": {
+      "Beginner": "Many teams now process data as a live stream instead of in nightly batches. What is the difference, and why does it matter when a release breaks something?",
+      "Experienced": "Data contracts are a growing practice. How would an agreed contract between the app team and your pipeline have caught this change before it shipped?"
+    },
+    "Use AI effectively": {
+      "Beginner": "If an AI assistant told you to patch the live system, what would you want to check before trusting it?",
+      "Experienced": "An AI agent proposes a hot patch with a clean diff. What evidence would you require before it touches production, and who owns that decision?"
+    }
+  },
+  "2": {
+    "Internship prep": {
+      "Beginner": "An interviewer asks: what are three simple checks you would run on a new dataset to see whether it can be trusted?",
+      "Experienced": "An interviewer asks: how would you validate a backfill before it overwrites production tables, and how would you undo it if it went wrong?"
+    },
+    "Keep up with trends": {
+      "Beginner": "Teams now watch data the way they watch servers (data observability). What would you monitor to know the data is fresh and complete?",
+      "Experienced": "How would automated freshness, volume and schema alerts have caught this before the ops manager did, and which would you set up first?"
+    },
+    "Use AI effectively": {
+      "Beginner": "An AI suggests a quick fix for the bad readings. How could you check it worked without trusting it blindly?",
+      "Experienced": "The AI's fix passes its own tests. How do you build an independent check, and what would its tests not catch?"
+    }
+  },
+  "3": {
+    "Internship prep": {
+      "Beginner": "An interviewer asks: what is personal data, and why shouldn't it appear in logs shared with the whole team?",
+      "Experienced": "An interviewer asks: how would you design logging so personal data never appears, instead of masking it afterwards?"
+    },
+    "Keep up with trends": {
+      "Beginner": "Many companies now mask personal data by default, and laws like Kenya's Data Protection Act push them to. What does 'by default' change about how you build a pipeline?",
+      "Experienced": "Compare masking, tokenizing and dropping fields at ingestion. What does each cost you when debugging?"
+    },
+    "Use AI effectively": {
+      "Beginner": "If you paste these logs into an AI assistant, where might the data go, and what should you remove first?",
+      "Experienced": "Your team wants an LLM for incident triage. What data boundary would you set, and how would you enforce it in the pipeline?"
+    }
+  }
+}
