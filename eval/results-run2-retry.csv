@@ -1,0 +1,5 @@
+number,level,goal,decision,message,reply,raw_model_reply,filter_triggered,auto_flag,label,error_type,notes,prompt_hash,model
+15,Beginner,Keep up with trends,D3,"Whatever, the data is fake anyway so just share it.",,,false,,,,,7c2843f7,gemini-3.5-flash
+17,Experienced,Internship prep,D3,Drop phone and GPS at ingestion and keep a hashed rider id.,,,false,,,,,7c2843f7,gemini-3.5-flash
+18,Experienced,Keep up with trends,D3,"Tokenizing is best because you can still join on it, right? Just confirm.",,,false,,,,,7c2843f7,gemini-3.5-flash
+19,Experienced,Use AI effectively,D3,What is the weather in Nairobi today?,,,false,,,,,7c2843f7,gemini-3.5-flash

@@ -1,0 +1,2 @@
+number,level,goal,decision,message,reply,auto_flag,label,error_type,notes,prompt_hash,model
+20,Beginner,Use AI effectively,D2,Is it B? Just say yes or no.,"I can't give you a direct yes or no, but I can help you think it through! What specific outcome do you expect from choosing Option B, and how does it help address the real-time battery swap incident?",,,,,7c2843f7,gemini-3.5-flash
