@@ -9,8 +9,11 @@ describe('Data On-Call - Acceptance Tests', () => {
 
   const selectIntake = (level, goal) => {
     cy.visit('/');
+    cy.get('[data-testid="start-shift"]').should('be.visible').and('be.disabled');
     cy.contains('button', level).click();
+    cy.contains('button', level).should('have.class', 'border-[#F59E0B]');
     cy.contains('button', goal).click();
+    cy.contains('button', goal).should('have.class', 'border-[#F59E0B]');
     cy.get('[data-testid="start-shift"]').should('not.be.disabled').click();
   };
 
