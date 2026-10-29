@@ -224,7 +224,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
                 type="button"
                 data-testid="hint"
                 onClick={() => setShowHint(!showHint)}
-                className="text-xs font-semibold px-2.5 py-1.5 rounded bg-[#1E293B] hover:bg-[#242A38] text-[#F59E0B] border border-[#334155] transition-colors cursor-pointer"
+                className="text-xs font-semibold px-2.5 py-1.5 rounded bg-[#1E293B] hover:bg-[#2A354A] text-[#F59E0B] border border-[#334155] transition-colors cursor-pointer"
               >
                 {showHint ? 'Hide hint' : 'Hint'}
               </button>
@@ -304,7 +304,9 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <span>
                 The tutor is busy right now. Here is a question to think about:{' '}
-                {getTutorQuestionForDecision(currentDecision.id, goal, level)}
+                <span data-testid="opening-question">
+                  {getTutorQuestionForDecision(currentDecision.id, goal, level)}
+                </span>
               </span>
               <button
                 type="button"
@@ -316,7 +318,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
               </button>
             </div>
           ) : (
-            tutorReply
+            <span data-testid="opening-question">{tutorReply}</span>
           )}
         </div>
 

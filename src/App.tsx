@@ -17,6 +17,7 @@ export default function App() {
   const [goal, setGoal] = useState<PlayerGoal | null>(null);
   const [decisionIndex, setDecisionIndex] = useState(0);
   const [choices, setChoices] = useState<Record<number, DecisionChoice>>({});
+  const [timeouts, setTimeouts] = useState<Record<number, boolean>>({});
 
   // Check for ?autostart=1 support for quick headless checks
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function App() {
     if (level && goal) {
       setDecisionIndex(0);
       setChoices({});
+      setTimeouts({});
       setScreen('scene');
     }
   };
@@ -40,12 +42,18 @@ export default function App() {
   const handleDecisionMade = (
     decisionId: number,
     choice: DecisionChoice,
-    _timedOut = false
+    timedOut = false
   ) => {
     setChoices((prev) => ({
       ...prev,
       [decisionId]: choice,
     }));
+    if (timedOut) {
+      setTimeouts((prev) => ({
+        ...prev,
+        [decisionId]: true,
+      }));
+    }
   };
 
   const handleNextDecision = () => {
@@ -60,12 +68,22 @@ export default function App() {
     setLevel(null);
     setGoal(null);
     setChoices({});
+    setTimeouts({});
     setDecisionIndex(0);
     setScreen('intake');
   };
 
   const handleChangeAnswers = () => {
     setChoices({});
+    setTimeouts({});
+    setDecisionIndex(0);
+    setScreen('scene');
+  };
+
+  const handleLevelChange = (newLevel: PlayerLevel) => {
+    setLevel(newLevel);
+    setChoices({});
+    setTimeouts({});
     setDecisionIndex(0);
     setScreen('scene');
   };
@@ -95,9 +113,15 @@ export default function App() {
 
       {screen === 'ending' && (
         <EndingScreen
-          evaluation={evaluateEnding(choices)}
+          evaluation={evaluateEnding(
+            choices,
+            level || 'Beginner',
+            goal || 'Internship prep',
+            timeouts
+          )}
           onPlayAgain={handlePlayAgain}
           onChangeAnswers={handleChangeAnswers}
+          onLevelChange={handleLevelChange}
         />
       )}
     </main>

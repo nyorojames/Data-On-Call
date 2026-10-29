@@ -1,19 +1,22 @@
 import React from 'react';
-import { EndingEvaluation } from '../game/rules.ts';
+import { EndingEvaluation, PlayerLevel } from '../game/rules.ts';
 import { CheckCircle2, AlertTriangle, ShieldCheck, Database, Layers } from 'lucide-react';
 
 interface EndingScreenProps {
   evaluation: EndingEvaluation;
   onPlayAgain: () => void;
   onChangeAnswers: () => void;
+  onLevelChange?: (newLevel: PlayerLevel) => void;
 }
 
 export const EndingScreen: React.FC<EndingScreenProps> = ({
   evaluation,
   onPlayAgain,
   onChangeAnswers,
+  onLevelChange,
 }) => {
-  const { endingTitle, causeMessage, results, isAllGood } = evaluation;
+  const { endingTitle, causeMessage, results, isAllGood, weakestSkill, nextStep, levelChange } =
+    evaluation;
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-8 flex flex-col min-h-screen justify-between">
@@ -46,7 +49,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
       </div>
 
       {/* 3. Three Rows: Architecture, Data quality, Privacy */}
-      <div className="space-y-3 my-auto py-6">
+      <div className="space-y-3 my-auto py-4">
         {/* Architecture */}
         <div
           data-testid="result-architecture"
@@ -118,15 +121,55 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
             )}
           </div>
         </div>
+
+        {/* 4. Growth: Weakest skill & Next step */}
+        <div className="p-4 bg-[#162032] border border-[#334155] rounded-lg space-y-3">
+          <div>
+            <span className="font-mono text-xs uppercase tracking-wider text-[#A08E7A] block mb-1">
+              Weakest skill
+            </span>
+            <span
+              data-testid="weakest-skill"
+              className="text-sm font-semibold text-[#F8FAFC]"
+            >
+              {weakestSkill}
+            </span>
+          </div>
+          <div className="pt-2 border-t border-[#1E293B]">
+            <span className="font-mono text-xs uppercase tracking-wider text-[#A08E7A] block mb-1">
+              Next step
+            </span>
+            <span
+              data-testid="next-step"
+              className="text-xs leading-relaxed text-[#DDE2F5]"
+            >
+              {nextStep}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 4 & 5. Action buttons */}
+      {/* 5. Action buttons */}
       <div className="space-y-3 pb-6">
+        {levelChange && onLevelChange && (
+          <button
+            type="button"
+            data-testid="level-change"
+            onClick={() => onLevelChange(levelChange.targetLevel)}
+            className="w-full h-12 bg-[#F59E0B] hover:bg-[#D97706] text-[#0B111E] font-bold rounded text-sm transition-all shadow-lg shadow-[#F59E0B]/20 cursor-pointer active:scale-[0.99]"
+          >
+            {levelChange.buttonText}
+          </button>
+        )}
         <button
           type="button"
           data-testid="play-again"
           onClick={onPlayAgain}
-          className="w-full h-13 bg-[#F59E0B] hover:bg-[#D97706] text-[#0B111E] font-bold rounded text-sm transition-all shadow-lg shadow-[#F59E0B]/20 cursor-pointer active:scale-[0.99]"
+          className={`w-full h-12 ${
+            levelChange
+              ? 'bg-[#162032] hover:bg-[#1E293B] text-[#DDE2F5] border border-[#334155]'
+              : 'bg-[#F59E0B] hover:bg-[#D97706] text-[#0B111E]'
+          } font-bold rounded text-sm transition-all cursor-pointer active:scale-[0.99]`}
         >
           Play again
         </button>

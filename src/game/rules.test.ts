@@ -4,6 +4,10 @@ import {
   evaluateEnding,
   getTutorQuestionForDecision,
   getHintForDecision,
+  getWeakestSkill,
+  getNextStep,
+  getLevelChangeRecommendation,
+  NEXT_STEPS,
   DECISIONS,
   SCENARIO_TEXT,
   PlayerGoal,
@@ -29,6 +33,7 @@ test('Ending A is produced when all decisions are Good (A, A, A)', () => {
   assert.equal(result.results.architecture.label, 'Good');
   assert.equal(result.results.dataQuality.label, 'Good');
   assert.equal(result.results.privacy.label, 'Good');
+  assert.equal(result.weakestSkill, 'Strong across all three');
 });
 
 test('Ending B names the FIRST risky decision when Decision 1 is risky', () => {
@@ -45,6 +50,7 @@ test('Ending B names the FIRST risky decision when Decision 1 is risky', () => {
   assert.equal(result.results.architecture.label, 'Risky');
   assert.equal(result.results.dataQuality.label, 'Good');
   assert.equal(result.results.privacy.label, 'Good');
+  assert.equal(result.weakestSkill, 'Architecture');
 });
 
 test('Ending B names Decision 2 (B) if Decision 1 was Good and Decision 2 was risky B', () => {
@@ -57,6 +63,7 @@ test('Ending B names Decision 2 (B) if Decision 1 was Good and Decision 2 was ri
   assert.equal(result.results.architecture.label, 'Good');
   assert.equal(result.results.dataQuality.label, 'Risky');
   assert.equal(result.results.privacy.label, 'Good');
+  assert.equal(result.weakestSkill, 'Data quality');
 });
 
 test('Ending B names Decision 2 (C) if Decision 1 was Good and Decision 2 was AI option C', () => {
@@ -69,6 +76,7 @@ test('Ending B names Decision 2 (C) if Decision 1 was Good and Decision 2 was AI
   assert.equal(result.results.architecture.label, 'Good');
   assert.equal(result.results.dataQuality.label, 'Risky');
   assert.equal(result.results.privacy.label, 'Risky');
+  assert.equal(result.weakestSkill, 'Data quality');
 });
 
 test('Ending B names Decision 3 if Decisions 1 and 2 were Good and Decision 3 was risky', () => {
@@ -81,6 +89,7 @@ test('Ending B names Decision 3 if Decisions 1 and 2 were Good and Decision 3 wa
   assert.equal(result.results.architecture.label, 'Good');
   assert.equal(result.results.dataQuality.label, 'Good');
   assert.equal(result.results.privacy.label, 'Risky');
+  assert.equal(result.weakestSkill, 'Privacy');
 });
 
 test('Exact 18 questions match specification by decision, goal and level', () => {
@@ -173,4 +182,57 @@ test('Exact 3 hints match specification', () => {
     getHintForDecision(3),
     'Who needs to see the raw rider details to fix this, and who does not?'
   );
+});
+
+test('AC7: getWeakestSkill returns Strong across all three when none risky, else first risky skill', () => {
+  assert.equal(getWeakestSkill({ 1: 'A', 2: 'A', 3: 'A' }), 'Strong across all three');
+  assert.equal(getWeakestSkill({ 1: 'B', 2: 'A', 3: 'A' }), 'Architecture');
+  assert.equal(getWeakestSkill({ 1: 'A', 2: 'B', 3: 'A' }), 'Data quality');
+  assert.equal(getWeakestSkill({ 1: 'A', 2: 'C', 3: 'A' }), 'Data quality');
+  assert.equal(getWeakestSkill({ 1: 'A', 2: 'A', 3: 'B' }), 'Privacy');
+  assert.equal(getWeakestSkill({ 1: 'B', 2: 'B', 3: 'B' }), 'Architecture');
+});
+
+test('AC7: getNextStep returns goal-aligned recommendation', () => {
+  assert.equal(
+    getNextStep('Internship prep'),
+    NEXT_STEPS['Internship prep']
+  );
+  assert.equal(
+    getNextStep('Keep up with trends'),
+    NEXT_STEPS['Keep up with trends']
+  );
+  assert.equal(
+    getNextStep('Use AI effectively'),
+    NEXT_STEPS['Use AI effectively']
+  );
+});
+
+test('AC7: getLevelChangeRecommendation matches specification rules', () => {
+  // Beginner + all good => Try Experienced mode
+  const beginnerGood = getLevelChangeRecommendation('Beginner', true, 0);
+  assert.deepEqual(beginnerGood, {
+    targetLevel: 'Experienced',
+    buttonText: 'Try Experienced mode',
+  });
+
+  // Beginner + 1 or more risky => null
+  assert.equal(getLevelChangeRecommendation('Beginner', false, 1), null);
+  assert.equal(getLevelChangeRecommendation('Beginner', false, 2), null);
+
+  // Experienced + 0 or 1 risky => null
+  assert.equal(getLevelChangeRecommendation('Experienced', true, 0), null);
+  assert.equal(getLevelChangeRecommendation('Experienced', false, 1), null);
+
+  // Experienced + 2 or more risky/timeouts => Try Beginner mode
+  const expRisky2 = getLevelChangeRecommendation('Experienced', false, 2);
+  assert.deepEqual(expRisky2, {
+    targetLevel: 'Beginner',
+    buttonText: 'Try Beginner mode',
+  });
+  const expRisky3 = getLevelChangeRecommendation('Experienced', false, 3);
+  assert.deepEqual(expRisky3, {
+    targetLevel: 'Beginner',
+    buttonText: 'Try Beginner mode',
+  });
 });

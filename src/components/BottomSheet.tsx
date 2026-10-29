@@ -35,18 +35,17 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             What happened and why
           </h2>
 
-          {timedOut && (
-            <p className="text-sm font-semibold text-[#EF4444]">
-              You ran out of time.
-            </p>
-          )}
-
-          <p
+          <div
             data-testid="consequence"
-            className="text-sm leading-relaxed text-[#DDE2F5]"
+            className="text-sm leading-relaxed text-[#DDE2F5] space-y-2"
           >
-            {consequenceText}
-          </p>
+            {timedOut && (
+              <p className="font-semibold text-[#EF4444]">
+                You ran out of time.
+              </p>
+            )}
+            <p>{consequenceText}</p>
+          </div>
         </div>
 
         <button

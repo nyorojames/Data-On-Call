@@ -164,6 +164,15 @@ export const DECISIONS: DecisionScenario[] = [
   },
 ];
 
+export const NEXT_STEPS: Record<PlayerGoal, string> = {
+  'Internship prep':
+    'Practice explaining pipeline trade-offs and rollback safety for technical interviews.',
+  'Keep up with trends':
+    'Explore data observability and contract testing in modern streaming pipelines.',
+  'Use AI effectively':
+    'Build independent verification checks before deploying AI-suggested pipeline changes.',
+};
+
 export interface EndingEvaluation {
   isAllGood: boolean;
   endingTitle: string;
@@ -173,16 +182,60 @@ export interface EndingEvaluation {
     dataQuality: { isGood: boolean; label: 'Good' | 'Risky' };
     privacy: { isGood: boolean; label: 'Good' | 'Risky' };
   };
+  weakestSkill: string;
+  nextStep: string;
+  levelChange: { targetLevel: PlayerLevel; buttonText: string } | null;
 }
 
-export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingEvaluation {
+export function getWeakestSkill(choices: Record<number, DecisionChoice>): string {
+  const riskySkills: string[] = [];
+  if (choices[1] && choices[1] !== 'A') riskySkills.push('Architecture');
+  if (choices[2] && choices[2] !== 'A') riskySkills.push('Data quality');
+  if (choices[3] && choices[3] !== 'A') riskySkills.push('Privacy');
+
+  if (riskySkills.length === 0) {
+    return 'Strong across all three';
+  }
+  return riskySkills[0];
+}
+
+export function getNextStep(goal: PlayerGoal): string {
+  return NEXT_STEPS[goal] ?? NEXT_STEPS['Internship prep'];
+}
+
+export function getLevelChangeRecommendation(
+  level: PlayerLevel,
+  isAllGood: boolean,
+  riskyOrTimeoutCount: number
+): { targetLevel: PlayerLevel; buttonText: string } | null {
+  if (level === 'Beginner' && isAllGood) {
+    return {
+      targetLevel: 'Experienced',
+      buttonText: 'Try Experienced mode',
+    };
+  }
+  if (level === 'Experienced' && riskyOrTimeoutCount >= 2) {
+    return {
+      targetLevel: 'Beginner',
+      buttonText: 'Try Beginner mode',
+    };
+  }
+  return null;
+}
+
+export function evaluateEnding(
+  choices: Record<number, DecisionChoice>,
+  level: PlayerLevel = 'Beginner',
+  goal: PlayerGoal = 'Internship prep',
+  timeouts: Record<number, boolean> = {}
+): EndingEvaluation {
   const d1 = choices[1];
   const d2 = choices[2];
   const d3 = choices[3];
 
-  const d1Good = d1 === 'A';
-  const d2Good = d2 === 'A';
-  const d3Good = d3 === 'A';
+  const d1Good = d1 === 'A' && !timeouts[1];
+  const d2Good = d2 === 'A' && !timeouts[2];
+  const d3Good = d3 === 'A' && !timeouts[3];
 
   const isAllGood = d1Good && d2Good && d3Good;
 
@@ -212,6 +265,16 @@ export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingE
     }
   }
 
+  const weakestSkill = getWeakestSkill(choices);
+  const nextStep = getNextStep(goal);
+
+  let riskyOrTimeoutCount = 0;
+  if (!d1Good || timeouts[1]) riskyOrTimeoutCount++;
+  if (!d2Good || timeouts[2]) riskyOrTimeoutCount++;
+  if (!d3Good || timeouts[3]) riskyOrTimeoutCount++;
+
+  const levelChange = getLevelChangeRecommendation(level, isAllGood, riskyOrTimeoutCount);
+
   return {
     isAllGood,
     endingTitle,
@@ -221,6 +284,9 @@ export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingE
       dataQuality: { isGood: d2Good, label: d2Good ? 'Good' : 'Risky' },
       privacy: { isGood: d3Good, label: d3Good ? 'Good' : 'Risky' },
     },
+    weakestSkill,
+    nextStep,
+    levelChange,
   };
 }
 
