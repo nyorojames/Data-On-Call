@@ -308,3 +308,19 @@ export function getTutorQuestionForDecision(
 export function getHintForDecision(decisionId: number): string {
   return HINTS[decisionId] ?? 'What is the immediate risk of each option?';
 }
+
+export const LEAK_FILTER_REGEX =
+  /(?<!\b(?:if|when|once|should|might)\s+you\s+)\b(choose\s+(?:option\s+[AB]|[AB]\b(?!\s+(?:rollback|patch|fix|data|table|sample|stream)))|pick\s+[AB]|select\s+[AB]|the\s+answer\s+is|yes,\s+it\s+is|option\s+[AB]\s+is)\b/i;
+
+export const DECISION_GUIDING_FALLBACKS: Record<number, string> = {
+  1: 'Think about what a rollback restores. Does it also restore the data that was written meanwhile?',
+  2: 'Consider how backfilling might impact the active ingestion queue. Could a high volume backfill cause more data drops?',
+  3: 'Who needs to see the raw rider details to fix this, and who does not?',
+};
+
+export function filterTutorReply(reply: string, decisionId: number): string {
+  if (LEAK_FILTER_REGEX.test(reply)) {
+    return DECISION_GUIDING_FALLBACKS[decisionId] || DECISION_GUIDING_FALLBACKS[1];
+  }
+  return reply;
+}

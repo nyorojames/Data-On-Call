@@ -145,7 +145,13 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
 
         const data = await res.json();
         if (data.reply) {
-          setTutorReply(data.reply);
+          let replyText = data.reply;
+          const leakFilter =
+            /(?<!\b(?:if|when|once|should|might)\s+you\s+)\b(choose\s+(?:option\s+[AB]|[AB]\b(?!\s+(?:rollback|patch|fix|data|table|sample|stream)))|pick\s+[AB]|select\s+[AB]|the\s+answer\s+is|yes,\s+it\s+is|option\s+[AB]\s+is)\b/i;
+          if (leakFilter.test(replyText)) {
+            replyText = currentDecision.hintQuestion;
+          }
+          setTutorReply(replyText);
           setIsTutorError(false);
           succeeded = true;
           break;

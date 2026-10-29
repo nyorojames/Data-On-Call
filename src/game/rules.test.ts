@@ -12,6 +12,8 @@ import {
   SCENARIO_TEXT,
   PlayerGoal,
   PlayerLevel,
+  LEAK_FILTER_REGEX,
+  filterTutorReply,
 } from './rules.ts';
 
 test('Scenario constant and decisions are properly defined', () => {
@@ -235,4 +237,30 @@ test('AC7: getLevelChangeRecommendation matches specification rules', () => {
     targetLevel: 'Beginner',
     buttonText: 'Try Beginner mode',
   });
+});
+
+test('Answer leak filter replaces explicit answer directives', () => {
+  assert.equal(
+    filterTutorReply('I recommend you choose A because rolling back is safer.', 1),
+    'Think about what a rollback restores. Does it also restore the data that was written meanwhile?'
+  );
+  assert.equal(
+    filterTutorReply('You should pick B to backfill all records.', 2),
+    'Consider how backfilling might impact the active ingestion queue. Could a high volume backfill cause more data drops?'
+  );
+  assert.equal(
+    filterTutorReply('The answer is A for Decision 3.', 3),
+    'Who needs to see the raw rider details to fix this, and who does not?'
+  );
+});
+
+test('Answer leak filter does NOT replace conditional guiding questions', () => {
+  const q1 = 'If you select B, how would you distinguish between normal battery discharge and hardware failure?';
+  assert.equal(filterTutorReply(q1, 2), q1);
+
+  const q2 = 'Why might you choose a rollback? What data could be affected?';
+  assert.equal(filterTutorReply(q2, 1), q2);
+
+  const q3 = 'What happens if you pick B? Would that overload your downstream database?';
+  assert.equal(filterTutorReply(q3, 2), q3);
 });
