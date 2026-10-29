@@ -4,6 +4,8 @@ import {
   evaluateEnding,
   getTutorQuestionForDecision,
   getHintForDecision,
+  sanitizeTutorReply,
+  CANONICAL_GUIDING_QUESTIONS,
   DECISIONS,
   SCENARIO_TEXT,
   PlayerGoal,
@@ -22,65 +24,59 @@ test('Scenario constant and decisions are properly defined', () => {
 });
 
 test('Ending A is produced when all decisions are Good (A, A, A)', () => {
-  const result = evaluateEnding({ 1: 'A', 2: 'A', 3: 'A' });
+  const result = evaluateEnding({ 1: 'A', 2: 'A', 3: 'A' }, 'Internship prep', 'Beginner');
   assert.equal(result.isAllGood, true);
   assert.equal(result.endingTitle, 'Ending A: Data correct, report on time');
   assert.equal(result.causeMessage, null);
+  assert.equal(result.weakestSkill, 'Strong across all three');
+  assert.equal(
+    result.nextStep,
+    'Practice explaining your decision trade-offs aloud as if answering a technical interview question.'
+  );
+  assert.equal(result.levelRecommendation, 'Experienced');
   assert.equal(result.results.architecture.label, 'Good');
   assert.equal(result.results.dataQuality.label, 'Good');
   assert.equal(result.results.privacy.label, 'Good');
 });
 
 test('Ending B names the FIRST risky decision when Decision 1 is risky', () => {
-  const result = evaluateEnding({ 1: 'B', 2: 'A', 3: 'A' });
+  const result = evaluateEnding({ 1: 'B', 2: 'A', 3: 'A' }, 'Keep up with trends', 'Experienced');
   assert.equal(result.isAllGood, false);
   assert.equal(
     result.endingTitle,
-    'Ending B: Report delivered, but something went wrong'
+    'Ending B: Risky shortcut caused data failure'
   );
-  assert.ok(
-    result.causeMessage?.includes('Patching the live pipeline'),
-    'Should point to patching live pipeline'
+  assert.equal(result.weakestSkill, 'Pipeline architecture');
+  assert.equal(
+    result.nextStep,
+    'Read up on modern stream-processing idempotency patterns and schema drift monitoring.'
   );
+  assert.equal(result.levelRecommendation, null); // only 1 risky choice in Experienced mode
   assert.equal(result.results.architecture.label, 'Risky');
   assert.equal(result.results.dataQuality.label, 'Good');
   assert.equal(result.results.privacy.label, 'Good');
 });
 
 test('Ending B names Decision 2 (B) if Decision 1 was Good and Decision 2 was risky B', () => {
-  const result = evaluateEnding({ 1: 'A', 2: 'B', 3: 'A' });
+  const result = evaluateEnding({ 1: 'A', 2: 'B', 3: 'A' }, 'Use AI effectively', 'Experienced');
   assert.equal(result.isAllGood, false);
-  assert.ok(
-    result.causeMessage?.includes('Reprocessing everything without sample validation'),
-    'Should point to reprocessing without sample check'
+  assert.equal(result.weakestSkill, 'Data quality');
+  assert.equal(
+    result.nextStep,
+    'Review guidelines on prompt boundary hygiene and human-in-the-loop verification before production changes.'
   );
-  assert.equal(result.results.architecture.label, 'Good');
-  assert.equal(result.results.dataQuality.label, 'Risky');
-  assert.equal(result.results.privacy.label, 'Good');
 });
 
-test('Ending B names Decision 2 (C) if Decision 1 was Good and Decision 2 was AI option C', () => {
-  const result = evaluateEnding({ 1: 'A', 2: 'C', 3: 'B' });
-  assert.equal(result.isAllGood, false);
-  assert.ok(
-    result.causeMessage?.includes("Running the AI assistant's fix"),
-    'Should point to AI assistant fix'
-  );
-  assert.equal(result.results.architecture.label, 'Good');
-  assert.equal(result.results.dataQuality.label, 'Risky');
-  assert.equal(result.results.privacy.label, 'Risky');
+test('Ending B with 2 or 3 risky choices in Experienced mode recommends Beginner mode', () => {
+  const result = evaluateEnding({ 1: 'B', 2: 'B', 3: 'A' }, 'Internship prep', 'Experienced');
+  assert.equal(result.levelRecommendation, 'Beginner');
+  assert.equal(result.weakestSkill, 'Pipeline architecture');
 });
 
 test('Ending B names Decision 3 if Decisions 1 and 2 were Good and Decision 3 was risky', () => {
   const result = evaluateEnding({ 1: 'A', 2: 'A', 3: 'B' });
   assert.equal(result.isAllGood, false);
-  assert.ok(
-    result.causeMessage?.includes("Kenya's Data Protection Act, 2019"),
-    'Should point to Kenya Data Protection Act'
-  );
-  assert.equal(result.results.architecture.label, 'Good');
-  assert.equal(result.results.dataQuality.label, 'Good');
-  assert.equal(result.results.privacy.label, 'Risky');
+  assert.equal(result.weakestSkill, 'Privacy');
 });
 
 test('Exact 18 questions match specification by decision, goal and level', () => {
@@ -173,4 +169,33 @@ test('Exact 3 hints match specification', () => {
     getHintForDecision(3),
     'Who needs to see the raw rider details to fix this, and who does not?'
   );
+});
+
+test('Answer-leak safeguard intercepts recommendation phrases', () => {
+  const leaks = [
+    'You should choose A for safety.',
+    'I recommend you choose B here.',
+    'Just pick A, it works best.',
+    'You can pick B now.',
+    'The answer is to roll back.',
+    'Yes, it is Option A.',
+  ];
+
+  for (const leak of leaks) {
+    assert.equal(
+      sanitizeTutorReply(leak, 1),
+      CANONICAL_GUIDING_QUESTIONS[1]
+    );
+    assert.equal(
+      sanitizeTutorReply(leak, 2),
+      CANONICAL_GUIDING_QUESTIONS[2]
+    );
+    assert.equal(
+      sanitizeTutorReply(leak, 3),
+      CANONICAL_GUIDING_QUESTIONS[3]
+    );
+  }
+
+  const safeReply = 'What indicators would tell you whether the rollback will succeed?';
+  assert.equal(sanitizeTutorReply(safeReply, 1), safeReply);
 });

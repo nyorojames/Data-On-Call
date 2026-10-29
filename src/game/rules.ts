@@ -1,7 +1,7 @@
 export type PlayerLevel = 'Beginner' | 'Experienced';
 export type PlayerGoal = 'Internship prep' | 'Keep up with trends' | 'Use AI effectively';
 export type DecisionChoice = 'A' | 'B' | 'C';
-export type DecisionCategory = 'Architecture' | 'Data quality' | 'Privacy';
+export type DecisionCategory = 'Pipeline architecture' | 'Data quality' | 'Privacy';
 
 export interface DecisionOption {
   id: DecisionChoice;
@@ -25,6 +25,34 @@ export const HINTS: Record<number, string> = {
   2: 'What is the smallest check you could run in two minutes that would tell you if the data is trustworthy?',
   3: 'Who needs to see the raw rider details to fix this, and who does not?',
 };
+
+export const CANONICAL_GUIDING_QUESTIONS: Record<number, string> = {
+  1: 'Think about what a rollback restores. Does it also restore the data that was written meanwhile?',
+  2: 'What is the smallest check you could run in two minutes that would tell you if the data is trustworthy?',
+  3: 'Who needs to see the raw rider details to fix this, and who does not?',
+};
+
+export const FORBIDDEN_PHRASES = [
+  'choose a',
+  'choose b',
+  'pick a',
+  'pick b',
+  'the answer is',
+  'yes, it is',
+];
+
+export function sanitizeTutorReply(reply: string, decisionId: number): string {
+  if (!reply) {
+    return CANONICAL_GUIDING_QUESTIONS[decisionId] || CANONICAL_GUIDING_QUESTIONS[1];
+  }
+  const lower = reply.toLowerCase();
+  for (const phrase of FORBIDDEN_PHRASES) {
+    if (lower.includes(phrase)) {
+      return CANONICAL_GUIDING_QUESTIONS[decisionId] || CANONICAL_GUIDING_QUESTIONS[1];
+    }
+  }
+  return reply;
+}
 
 export const TUTOR_QUESTION_BANK: Record<
   number,
@@ -95,7 +123,7 @@ export const TUTOR_QUESTION_BANK: Record<
 export const DECISIONS: DecisionScenario[] = [
   {
     id: 1,
-    category: 'Architecture',
+    category: 'Pipeline architecture',
     options: [
       {
         id: 'A',
@@ -164,10 +192,22 @@ export const DECISIONS: DecisionScenario[] = [
   },
 ];
 
+export const GOAL_RECOMMENDATIONS: Record<PlayerGoal, string> = {
+  'Internship prep':
+    'Practice explaining your decision trade-offs aloud as if answering a technical interview question.',
+  'Keep up with trends':
+    'Read up on modern stream-processing idempotency patterns and schema drift monitoring.',
+  'Use AI effectively':
+    'Review guidelines on prompt boundary hygiene and human-in-the-loop verification before production changes.',
+};
+
 export interface EndingEvaluation {
   isAllGood: boolean;
   endingTitle: string;
   causeMessage: string | null;
+  weakestSkill: string;
+  nextStep: string;
+  levelRecommendation: PlayerLevel | null;
   results: {
     architecture: { isGood: boolean; label: 'Good' | 'Risky' };
     dataQuality: { isGood: boolean; label: 'Good' | 'Risky' };
@@ -175,7 +215,11 @@ export interface EndingEvaluation {
   };
 }
 
-export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingEvaluation {
+export function evaluateEnding(
+  choices: Record<number, DecisionChoice>,
+  playerGoal: PlayerGoal = 'Internship prep',
+  playerLevel: PlayerLevel = 'Beginner'
+): EndingEvaluation {
   const d1 = choices[1];
   const d2 = choices[2];
   const d3 = choices[3];
@@ -188,17 +232,21 @@ export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingE
 
   let endingTitle: string;
   let causeMessage: string | null = null;
+  let weakestSkill: string;
 
   if (isAllGood) {
     endingTitle = 'Ending A: Data correct, report on time';
+    weakestSkill = 'Strong across all three';
   } else {
-    endingTitle = 'Ending B: Report delivered, but something went wrong';
+    endingTitle = 'Ending B: Risky shortcut caused data failure';
 
     // Find the FIRST risky decision
     if (!d1Good) {
+      weakestSkill = 'Pipeline architecture';
       causeMessage =
         'Patching the live pipeline caused the pipeline to stall under load and data was stored inconsistently.';
     } else if (!d2Good) {
+      weakestSkill = 'Data quality';
       if (d2 === 'C') {
         causeMessage =
           "Running the AI assistant's fix without verification changed more records than intended.";
@@ -206,16 +254,35 @@ export function evaluateEnding(choices: Record<number, DecisionChoice>): EndingE
         causeMessage =
           'Reprocessing everything without sample validation copied bad records and silently corrupted stock numbers.';
       }
-    } else if (!d3Good) {
+    } else {
+      weakestSkill = 'Privacy';
       causeMessage =
         "Sharing raw logs with rider phone numbers and GPS locations breached Kenya's Data Protection Act, 2019.";
     }
   }
 
+  // Count risky choices
+  let riskyCount = 0;
+  if (!d1Good) riskyCount++;
+  if (!d2Good) riskyCount++;
+  if (!d3Good) riskyCount++;
+
+  let levelRecommendation: PlayerLevel | null = null;
+  if (playerLevel === 'Beginner' && isAllGood) {
+    levelRecommendation = 'Experienced';
+  } else if (playerLevel === 'Experienced' && riskyCount >= 2) {
+    levelRecommendation = 'Beginner';
+  }
+
+  const nextStep = GOAL_RECOMMENDATIONS[playerGoal];
+
   return {
     isAllGood,
     endingTitle,
     causeMessage,
+    weakestSkill,
+    nextStep,
+    levelRecommendation,
     results: {
       architecture: { isGood: d1Good, label: d1Good ? 'Good' : 'Risky' },
       dataQuality: { isGood: d2Good, label: d2Good ? 'Good' : 'Risky' },

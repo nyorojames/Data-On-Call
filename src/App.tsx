@@ -70,6 +70,13 @@ export default function App() {
     setScreen('scene');
   };
 
+  const handleChangeLevel = (newLevel: PlayerLevel) => {
+    setLevel(newLevel);
+    setChoices({});
+    setDecisionIndex(0);
+    setScreen('scene');
+  };
+
   return (
     <main className="min-h-screen bg-[#0B111E] text-[#DDE2F5] flex flex-col justify-center items-center">
       {screen === 'intake' && (
@@ -95,9 +102,14 @@ export default function App() {
 
       {screen === 'ending' && (
         <EndingScreen
-          evaluation={evaluateEnding(choices)}
+          evaluation={evaluateEnding(
+            choices,
+            goal || 'Internship prep',
+            level || 'Beginner'
+          )}
           onPlayAgain={handlePlayAgain}
           onChangeAnswers={handleChangeAnswers}
+          onChangeLevel={handleChangeLevel}
         />
       )}
     </main>

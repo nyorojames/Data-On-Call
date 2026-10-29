@@ -34,6 +34,10 @@ const FALLBACK_REPLIES: Record<number, string[]> = {
   ],
 };
 
+import { sanitizeTutorReply } from './src/game/rules.ts';
+
+const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+
 app.post('/api/tutor', async (req: Request, res: Response) => {
   try {
     const { message, decisionId, goal, level } = req.body;
@@ -49,7 +53,7 @@ app.post('/api/tutor', async (req: Request, res: Response) => {
       // Graceful fallback
       const fallbacks = FALLBACK_REPLIES[decId] || FALLBACK_REPLIES[1];
       const reply = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-      res.json({ reply });
+      res.json({ reply: sanitizeTutorReply(reply, decId) });
       return;
     }
 
@@ -76,7 +80,7 @@ Provide your Socratic response according to your system instructions.`;
     for (let attempt = 0; attempt <= 3; attempt++) {
       try {
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: modelName,
           contents: userPrompt,
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
@@ -95,7 +99,8 @@ Provide your Socratic response according to your system instructions.`;
     }
 
     if (replyText) {
-      res.json({ reply: replyText });
+      const sanitized = sanitizeTutorReply(replyText, decId);
+      res.json({ reply: sanitized });
     } else {
       console.error('All Gemini API attempts failed:', lastError);
       res.status(503).json({ error: 'The tutor is busy right now.' });

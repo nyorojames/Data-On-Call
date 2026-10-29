@@ -7,6 +7,7 @@ import {
   SCENARIO_TEXT,
   getHintForDecision,
   getTutorQuestionForDecision,
+  sanitizeTutorReply,
 } from '../game/rules.ts';
 import { BottomSheet } from './BottomSheet.tsx';
 
@@ -145,7 +146,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
 
         const data = await res.json();
         if (data.reply) {
-          setTutorReply(data.reply);
+          const sanitized = sanitizeTutorReply(data.reply, currentDecision.id);
+          setTutorReply(sanitized);
           setIsTutorError(false);
           succeeded = true;
           break;
@@ -222,7 +224,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
             ) : (
               <button
                 type="button"
-                data-testid="hint"
+                data-testid="hint-button"
                 onClick={() => setShowHint(!showHint)}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded bg-[#1E293B] hover:bg-[#242A38] text-[#F59E0B] border border-[#334155] transition-colors cursor-pointer"
               >
@@ -234,7 +236,10 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
 
         {/* Beginner Hint Question Display */}
         {showHint && level === 'Beginner' && (
-          <div className="p-3 bg-[#162032] border border-[#F59E0B]/40 rounded text-xs text-[#FFC174] leading-relaxed animate-in fade-in">
+          <div
+            data-testid="hint-text"
+            className="p-3 bg-[#162032] border border-[#F59E0B]/40 rounded text-xs text-[#FFC174] leading-relaxed animate-in fade-in"
+          >
             <span className="font-semibold block mb-1">Guiding question:</span>
             {getHintForDecision(currentDecision.id)}
           </div>
@@ -302,7 +307,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
         >
           {isTutorError ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <span>
+              <span data-testid="opening-question">
                 The tutor is busy right now. Here is a question to think about:{' '}
                 {getTutorQuestionForDecision(currentDecision.id, goal, level)}
               </span>
@@ -316,7 +321,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
               </button>
             </div>
           ) : (
-            tutorReply
+            <span data-testid="opening-question">{tutorReply}</span>
           )}
         </div>
 
@@ -332,6 +337,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
           />
           <button
             type="submit"
+            data-testid="tutor-submit"
             disabled={isSubmittingTutor}
             className="px-3 h-9 bg-[#1E293B] hover:bg-[#2A354A] disabled:opacity-50 text-[#F59E0B] border border-[#334155] rounded text-xs font-semibold transition-all cursor-pointer"
           >

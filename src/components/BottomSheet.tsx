@@ -36,8 +36,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           </h2>
 
           {timedOut && (
-            <p className="text-sm font-semibold text-[#EF4444]">
-              You ran out of time.
+            <p
+              data-testid="timeout-message"
+              className="text-sm font-semibold text-[#EF4444] leading-relaxed"
+            >
+              You ran out of time! In Experienced mode, an on-call data incident forces a decision under pressure. A risky default option was recorded.
             </p>
           )}
 
