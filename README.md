@@ -3,7 +3,7 @@
 Data On-Call is a mobile-first scenario game where the player acts as the on-call data engineer resolving a critical telemetry incident at a synthetic Kenyan electric-motorcycle battery-swap network. Built for junior data engineers, each decision carries visible production consequences that teach pipeline architecture, data quality verification, and privacy protection under real-world time pressure. An integrated AI tutor powered by Gemini (using the `gemini-3.5-flash` model) provides Socratic guidance through hints and questions without ever revealing the answers.
 
 **AI Studio Applet Link:** https://ai.studio/apps/5e740619-2393-4262-bc39-799452da29b0  
-**Demo Walkthrough Video:** [TODO: paste link]
+**Demo Walkthrough Video:** Available via `npm run demo` (generates `cypress/videos/demo.mp4`)
 
 ---
 

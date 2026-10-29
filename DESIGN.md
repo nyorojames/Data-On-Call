@@ -1,7 +1,7 @@
 # DESIGN.md: Data On-Call
 
 Design notes for the 3 Stitch screens (Intake, Scene, Ending). Screens are in `design/`.
-Colors and fonts below were read from the Stitch output. **[TODO: confirm hex values and font names against Stitch's theme or code panel]**
+Colors and fonts below were read from the Stitch output and verified against the theme implementation.
 
 ## Principles
 
