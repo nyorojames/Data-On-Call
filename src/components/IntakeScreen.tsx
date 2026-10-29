@@ -50,6 +50,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
                 <button
                   key={lvl}
                   type="button"
+                  data-testid={`level-${lvl.toLowerCase()}`}
                   onClick={() => onSelectLevel(lvl)}
                   className={`h-12 px-4 rounded border text-sm font-medium transition-all ${
                     selected
@@ -78,10 +79,17 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
               ] as PlayerGoal[]
             ).map((g) => {
               const selected = goal === g;
+              const testId =
+                g === 'Internship prep'
+                  ? 'goal-internship'
+                  : g === 'Keep up with trends'
+                  ? 'goal-trends'
+                  : 'goal-ai';
               return (
                 <button
                   key={g}
                   type="button"
+                  data-testid={testId}
                   onClick={() => onSelectGoal(g)}
                   className={`h-12 px-4 rounded border text-left text-sm font-medium transition-all ${
                     selected

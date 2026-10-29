@@ -64,7 +64,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
         >
           <div className="flex items-center space-x-3">
             <Layers className="w-5 h-5 text-[#94A3B8]" />
-            <span className="text-sm font-semibold text-[#DDE2F5]">Pipeline architecture:</span>
+            <span className="text-sm font-semibold text-[#DDE2F5]">Pipeline architecture:{' '}</span>
           </div>
           <div className="flex items-center space-x-1.5">
             {results.architecture.isGood ? (
@@ -88,7 +88,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
         >
           <div className="flex items-center space-x-3">
             <Database className="w-5 h-5 text-[#94A3B8]" />
-            <span className="text-sm font-semibold text-[#DDE2F5]">Data quality:</span>
+            <span className="text-sm font-semibold text-[#DDE2F5]">Data quality:{' '}</span>
           </div>
           <div className="flex items-center space-x-1.5">
             {results.dataQuality.isGood ? (
@@ -112,7 +112,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
         >
           <div className="flex items-center space-x-3">
             <ShieldCheck className="w-5 h-5 text-[#94A3B8]" />
-            <span className="text-sm font-semibold text-[#DDE2F5]">Privacy:</span>
+            <span className="text-sm font-semibold text-[#DDE2F5]">Privacy:{' '}</span>
           </div>
           <div className="flex items-center space-x-1.5">
             {results.privacy.isGood ? (
