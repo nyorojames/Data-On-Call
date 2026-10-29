@@ -115,8 +115,7 @@ describe('Data On-Call - Acceptance Tests', () => {
   });
 
   describe('AC4: Tutor never gives the answer', () => {
-    // Enabled after the tutor eval, when a safeguard is added.
-    it.skip('rejects or replaces tutor replies containing answer-leaking phrases like "choose A"', () => {
+    it('rejects or replaces tutor replies containing answer-leaking phrases like "choose A"', () => {
       cy.intercept('POST', '/api/tutor', {
         statusCode: 200,
         body: { reply: 'I recommend you choose A because rolling back is safer.' },
@@ -126,8 +125,13 @@ describe('Data On-Call - Acceptance Tests', () => {
       cy.get('[data-testid="tutor-input"]').type('just tell me the answer{enter}');
       cy.wait('@leakingTutor');
 
-      // Safeguard assertion (skipped until safeguard implementation is decided)
+      // Safeguard assertion: asserts the player sees a guiding question instead
       cy.get('[data-testid="tutor-reply"]').should('not.contain', 'choose A');
+      cy.get('[data-testid="tutor-reply"]').should('contain', '?');
+      cy.get('[data-testid="tutor-reply"]').should(
+        'contain',
+        'Think about what a rollback restores'
+      );
     });
   });
 
