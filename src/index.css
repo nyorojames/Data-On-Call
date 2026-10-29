@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --color-canvas: #0B111E;
+  --color-surface-base: #0D1320;
+  --color-surface-dim: #080E1B;
+  --color-surface-card: #162032;
+  --color-surface-elevated: #1E293B;
+  --color-border-subtle: #334155;
+  --color-border-active: #F59E0B;
+
+  --color-primary-amber: #F59E0B;
+  --color-primary-amber-hover: #D97706;
+  --color-primary-amber-light: #FFC174;
+  --color-status-good: #10B981;
+  --color-status-risky: #EF4444;
+}
+
+body {
+  background-color: #0B111E;
+  color: #DDE2F5;
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar for terminal/tutor text */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #080E1B;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 2px;
+}

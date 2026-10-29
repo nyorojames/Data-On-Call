@@ -1,0 +1,228 @@
+---
+name: Mission Ops Mobile
+colors:
+  surface: '#0d1320'
+  surface-dim: '#0d1320'
+  surface-bright: '#333948'
+  surface-container-lowest: '#080e1b'
+  surface-container-low: '#161b29'
+  surface-container: '#1a1f2d'
+  surface-container-high: '#242a38'
+  surface-container-highest: '#2f3543'
+  on-surface: '#dde2f5'
+  on-surface-variant: '#d8c3ad'
+  inverse-surface: '#dde2f5'
+  inverse-on-surface: '#2a303f'
+  outline: '#a08e7a'
+  outline-variant: '#534434'
+  surface-tint: '#ffb95f'
+  primary: '#ffc174'
+  on-primary: '#472a00'
+  primary-container: '#f59e0b'
+  on-primary-container: '#613b00'
+  inverse-primary: '#855300'
+  secondary: '#4edea3'
+  on-secondary: '#003824'
+  secondary-container: '#00a572'
+  on-secondary-container: '#00311f'
+  tertiary: '#ffbcb7'
+  on-tertiary: '#68000a'
+  tertiary-container: '#ff938c'
+  on-tertiary-container: '#8d0012'
+  error: '#ffb4ab'
+  on-error: '#690005'
+  error-container: '#93000a'
+  on-error-container: '#ffdad6'
+  primary-fixed: '#ffddb8'
+  primary-fixed-dim: '#ffb95f'
+  on-primary-fixed: '#2a1700'
+  on-primary-fixed-variant: '#653e00'
+  secondary-fixed: '#6ffbbe'
+  secondary-fixed-dim: '#4edea3'
+  on-secondary-fixed: '#002113'
+  on-secondary-fixed-variant: '#005236'
+  tertiary-fixed: '#ffdad7'
+  tertiary-fixed-dim: '#ffb3ad'
+  on-tertiary-fixed: '#410004'
+  on-tertiary-fixed-variant: '#930013'
+  background: '#0d1320'
+  on-background: '#dde2f5'
+  surface-variant: '#2f3543'
+typography:
+  headline-xl:
+    fontFamily: Inter
+    fontSize: 36px
+    fontWeight: '700'
+    lineHeight: 44px
+    letterSpacing: -0.02em
+  headline-xl-mobile:
+    fontFamily: Inter
+    fontSize: 28px
+    fontWeight: '700'
+    lineHeight: 34px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Inter
+    fontSize: 24px
+    fontWeight: '600'
+    lineHeight: 30px
+    letterSpacing: -0.015em
+  headline-md:
+    fontFamily: Inter
+    fontSize: 20px
+    fontWeight: '600'
+    lineHeight: 26px
+    letterSpacing: -0.01em
+  headline-sm:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: '600'
+    lineHeight: 22px
+    letterSpacing: -0.005em
+  body-lg:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
+  body-md:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 20px
+  body-sm:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '400'
+    lineHeight: 16px
+  label-lg:
+    fontFamily: JetBrains Mono
+    fontSize: 14px
+    fontWeight: '500'
+    lineHeight: 18px
+    letterSpacing: 0.02em
+  label-md:
+    fontFamily: JetBrains Mono
+    fontSize: 12px
+    fontWeight: '500'
+    lineHeight: 16px
+    letterSpacing: 0.04em
+  label-sm:
+    fontFamily: JetBrains Mono
+    fontSize: 11px
+    fontWeight: '400'
+    lineHeight: 14px
+    letterSpacing: 0.05em
+  metric-display:
+    fontFamily: JetBrains Mono
+    fontSize: 28px
+    fontWeight: '700'
+    lineHeight: 32px
+    letterSpacing: -0.03em
+rounded:
+  sm: 0.125rem
+  DEFAULT: 0.25rem
+  md: 0.375rem
+  lg: 0.5rem
+  xl: 0.75rem
+  full: 9999px
+spacing:
+  gutter: 0.75rem
+  margin: 1rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 2rem
+---
+
+## Brand & Style
+
+This design system establishes a high-stakes, mission-critical operations aesthetic tailored for a technical on-call simulation game. The atmosphere is quiet, controlled, and intensely focused—evoking a modern SOC (Security Operations Center) or high-reliability infrastructure command bridge at 03:00 AM. 
+
+The aesthetic synthesizes utilitarian minimalism, subtle retro-futuristic telemetry instrumentation, and tactical dark mode design:
+- **Atmospheric Pressure:** Deep space navy tones eliminate ambient eye strain during prolonged triage runs, providing an authentic terminal-like immersion.
+- **Instrument Precision:** Information architecture prioritizes diagnostic speed, data integrity, and situational triage over playful ornamentation.
+- **Controlled Telemetry:** Luminescent amber, emerald, and crimson status vectors cast delicate optical halos against structural slate panels, framing incidents with instant visceral clarity.
+- **Chrome Elimination:** Chrome, standard app tabs, and decorative framing are stripped away. Controls function as direct hardware-grade interactive modules embedded directly into the field view.
+
+## Colors
+
+The palette is engineered around high functional contrast, dark-room ergonomic safety, and instant situational awareness.
+
+### Canvas & Surface Hierarchy
+- **Base Canvas (`#0B111E`):** Root background, evoking deep operational night.
+- **Secondary Canvas (`#0F172A`):** Recessed telemetry wells, canvas backplates, and terminal viewports.
+- **Surface Level 1 (`#162032`):** Primary card modules, systemic panels, and modular dashboard grids.
+- **Surface Level 2 (`#1E293B`):** Elevated interactive elements, modals, triage sheets, and active focus states.
+- **Surface Border (`#334155`):** Structural hairline dividers and container bounds maintaining architectural rigidity.
+
+### State & Signal Accents
+- **Amber Primary (`#F59E0B` / `#D97706`):** Primary interactive triggers, active alerts, active on-call paging, and triage states.
+- **Emerald Telemetry (`#10B981`):** Nominal operational throughput, resolved incidents, uptime status indicators, and positive diagnostic diffs.
+- **Crimson Telemetry (`#EF4444`):** Active Sev-0/Sev-1 alerts, circuit breaks, SLA decay timers, and critical system faults.
+- **Muted System Slate (`#64748B` / `#94A3B8`):** Non-actionable metadata, secondary labels, and dormant hardware states.
+- **Pure Readability White (`#F8FAFC`):** Primary diagnostic readouts, headline text, and urgent callouts.
+
+## Typography
+
+Typography balances rapid scanning and exact computational precision. 
+
+- **Primary Interface (Inter):** Leveraged across all contextual narrative, decision branches, action dialogues, and system status headlines. Inter provides clean grotesque letterforms with tall x-heights that remain crisp under compressed mobile conditions.
+- **Telemetry & Technical Ledger (JetBrains Mono):** Reserved for timestamps, error signatures, log outputs, SLA time limits, latency counters, and port numbers. It imparts an unmistakable code/command feel, forcing mechanical distinction between situational prose and system telemetry.
+- **Tabular Numerics:** All JetBrains Mono usage relies on fixed-width tabular numbers, preventing horizontal layout shifting when timers, server loads, or system metrics update in real time.
+
+## Layout & Spacing
+
+The mobile layout treats the mobile viewport as a mission console monitor, maximizing immediate visibility within thumb reach.
+
+- **Grid Architecture:** A dynamic 4-column mobile fluid layout using compact `0.75rem` gutters and `1rem` safe-margin framing. When scaled to tablet or horizontal command deck orientations, it transitions smoothly into an 8-column layout with pinned diagnostic sidebars.
+- **No Bottom Tab Bars:** Standard mobile tab bars are strictly omitted. In their place, priority alert feeds and operational command triggers populate persistent top-level status bars and contextual triage action zones anchored directly above mobile gesture safe areas.
+- **Touch Target Integrity:** Despite high data density, all interactive hitboxes are enforced to a strict vertical height of 48px to 56px, preventing accidental triage inputs under stressful game scenarios.
+- **Information Stacking:** System components stack vertically into dense operational units separated by `space-sm` or `space-md`, maintaining structural continuity without wasting vertical space.
+
+## Elevation & Depth
+
+This system intentionally departs from soft consumer dropshadows. Depth is articulated through architectural borders, surface shifts, and luminous telemetry feedback.
+
+- **Tonal Layering:** Visual elevation is created via value shifts from `#0B111E` (canvas) up to `#162032` (surface-1) and `#1E293B` (elevated modals/drawers).
+- **Hairline Structural Borders:** All elevated cards and containment zones feature a crisp 1px solid border using `#334155`, delivering a rugged, modular hardware chassis quality.
+- **Active Telemetry Halos:** Floating modals, mission alerts, and critical indicators drop diffused, low-spread luminescent glows instead of black shadows:
+  - *Amber Warning State:* `0 0 16px -2px rgba(245, 158, 11, 0.25)`
+  - *Emerald Nominal State:* `0 0 16px -2px rgba(16, 185, 129, 0.2)`
+  - *Crimson Incident State:* `0 0 20px -2px rgba(239, 68, 68, 0.35)`
+- **Recessed Insets:** Log terminal shells and status graphs use a 1px inner border (`rgba(0, 0, 0, 0.4)`) to visually depress the component into the screen.
+
+## Shapes
+
+The design uses tight, purposeful corner radiuses (`roundedness: 1`). 
+
+- **Core Geometry:** Base interactive elements, data tiles, and notification strips feature a subtle 4px (`0.25rem`) corner rounding. This creates a technical, hardware-inspired profile that avoids the clinical harshness of 0px sharp corners while rejecting playful pill or circular shapes.
+- **Large Panels & Sheets:** Triage overlays and high-level card envelopes scale up to 8px (`0.5rem`) radiuses to softly frame complex internal metrics without reducing usable edge-to-edge space.
+- **Data Status Nodes:** Telemetry status dots, pings, and heartbeat beacons are the sole elements utilizing full circles, clearly distinguishing live system state beacons from interactive tap zones.
+
+## Components
+
+### Buttons & Action Triggers
+- **Primary Incident Action (Amber):** Solid `#F59E0B` fill with `#0B111E` bold label text. Minimum height of 52px. Hover/active states trigger a micro-scale transition with an ambient amber glow (`rgba(245, 158, 11, 0.4)`).
+- **Destructive / Rollback Trigger (Crimson):** Solid `#162032` background with a 1px `#EF4444` border and `#EF4444` text. On press, transitions to full `#EF4444` background with pure white text.
+- **Secondary Triage / Dismiss:** `#1E293B` background with `#334155` border, flat `#F8FAFC` text, and zero ambient glow. Minimum height of 48px.
+
+### Cards & Diagnostic Panels
+- **Telemetry Card:** `#162032` base container with a 1px `#334155` border. Padding is strictly locked to `space-md` (16px). Headers feature uppercase `label-md` tracking accompanied by an active status ping indicator (green/amber/crimson).
+- **Incident Alert Module:** Uses an elevated `#1E293B` background with an inset 3px left border colored to match the severity level (`#EF4444` for Sev-1, `#F59E0B` for Sev-2).
+
+### Telemetry Badges & Chips
+- **Structural Status Pill:** Compact container using `#0F172A` background with a subtle colored boundary (`#10B981`, `#EF4444`, or `#F59E0B`). Contains an inline monospaced string (`JetBrains Mono`, `label-sm`), uppercase with a leading dynamic pulse dot.
+- **Resource Metric Tag:** Inset tag presenting CPU/Memory/SLA values in monospaced tabular figures with dim slate labeling.
+
+### Lists & Incident Feeds
+- **Log Stream:** Monospaced terminal list with `#0B111E` backing. Alternating or single-pixel border division (`#1E293B`). Error logs feature high-contrast crimson highlights on affected line numbers and exception signatures.
+- **Triage Checklist Item:** 56px minimum row height with integrated tactile status toggle. Left side features an unambiguous checkbox framed in `#334155`; right side displays micro-countdown timer metrics.
+
+### Selection Controls & Inputs
+- **Checkboxes & Radios:** Sharp 4px rounded bounding boxes (`20x20px`) bounded by `#334155`. When toggled, fills with `#F59E0B` exhibiting a solid dark icon check.
+- **Terminal Input Field:** `#0F172A` recessed background with 1px `#334155` stroke. Text renders in JetBrains Mono (`body-md`) with an amber-tinted pulsing terminal caret. Focus state switches border to `#F59E0B` with subtle glow diffusion.
+
+### Mission-Critical Specialized Components
+- **SLA Decay Gauge:** Horizontal 4px track fixed across card headers or screen tops. Shifts dynamically from `#10B981` through `#F59E0B` to blinking `#EF4444` as response windows deteriorate.
+- **Runbook Drawer:** Bottom-anchored slideover sheet with high-contrast `#1E293B` elevation, offering fast, unambiguous multi-choice triage decisions during simulated outages.

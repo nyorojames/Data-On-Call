@@ -1,0 +1,6 @@
+{
+  "name": "Data On-Call",
+  "description": "A high-stakes data engineering scenario game set in a synthetic Kenyan electric-motorcycle battery-swap network.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
