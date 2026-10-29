@@ -14,7 +14,7 @@
     "test:unit": "tsx --test src/game/rules.test.ts",
     "test": "cypress run",
     "test:open": "cypress open",
-    "demo": "cypress run --spec cypress/e2e/demo.cy.js",
+    "demo": "node scripts/run-demo.js",
     "eval": "node scripts/run-eval.js"
   },
   "dependencies": {
