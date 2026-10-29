@@ -15,7 +15,9 @@
     "test": "cypress run",
     "test:open": "cypress open",
     "demo": "node scripts/run-demo.js",
-    "eval": "node scripts/run-eval.js"
+    "eval": "node scripts/run-eval.js",
+    "merge-eval": "node scripts/merge-eval.js",
+    "summarize-eval": "node scripts/summarize-eval.js"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
