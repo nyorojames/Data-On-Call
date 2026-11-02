@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { PlayerLevel, PlayerGoal, DecisionChoice, evaluateEnding } from './game/rules.ts';
+import { TelemetryRow, buildTelemetryRow, generateSessionId } from './game/telemetry.ts';
 import { IntakeScreen } from './components/IntakeScreen.tsx';
 import { SceneScreen } from './components/SceneScreen.tsx';
 import { EndingScreen } from './components/EndingScreen.tsx';
@@ -18,6 +19,27 @@ export default function App() {
   const [decisionIndex, setDecisionIndex] = useState(0);
   const [choices, setChoices] = useState<Record<number, DecisionChoice>>({});
   const [timeouts, setTimeouts] = useState<Record<number, boolean>>({});
+
+  // Telemetry session state (random ID, strictly in memory, no personal data)
+  const [sessionId, setSessionId] = useState<string>(() => generateSessionId());
+  const [sessionRows, setSessionRows] = useState<TelemetryRow[]>([]);
+  const [hintsCount, setHintsCount] = useState(0);
+  const [riskyCount, setRiskyCount] = useState(0);
+  const [timeoutsCount, setTimeoutsCount] = useState(0);
+  const [lastDecisionTimeSec, setLastDecisionTimeSec] = useState(0);
+  const [isCollectionMode, setIsCollectionMode] = useState(false);
+
+  // Check collection mode status on mount
+  useEffect(() => {
+    fetch('/api/log/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.collection_mode) {
+          setIsCollectionMode(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Check for ?autostart=1 support for quick headless checks
   useEffect(() => {
@@ -35,6 +57,12 @@ export default function App() {
       setDecisionIndex(0);
       setChoices({});
       setTimeouts({});
+      setSessionId(generateSessionId());
+      setSessionRows([]);
+      setHintsCount(0);
+      setRiskyCount(0);
+      setTimeoutsCount(0);
+      setLastDecisionTimeSec(0);
       setScreen('scene');
     }
   };
@@ -42,7 +70,9 @@ export default function App() {
   const handleDecisionMade = (
     decisionId: number,
     choice: DecisionChoice,
-    timedOut = false
+    timedOut = false,
+    decisionTimeSec = 0,
+    hintViewed = false
   ) => {
     setChoices((prev) => ({
       ...prev,
@@ -53,6 +83,41 @@ export default function App() {
         ...prev,
         [decisionId]: true,
       }));
+    }
+
+    const isRisky = choice !== 'A' || timedOut;
+
+    if (level && goal) {
+      const row = buildTelemetryRow({
+        sessionId,
+        sceneNumber: decisionId,
+        level,
+        goal,
+        previousHintsCount: hintsCount,
+        previousRiskyCount: riskyCount,
+        previousTimeoutsCount: timeoutsCount,
+        previousDecisionTimeSec: lastDecisionTimeSec,
+        hintViewedInThisScene: hintViewed,
+        decisionTimeSec,
+        isRiskyChoiceOrTimeout: isRisky,
+      });
+
+      setSessionRows((prev) => [...prev, row]);
+
+      // Fire non-blocking POST to /api/log
+      fetch('/api/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(row),
+      }).catch(() => {
+        // Non-blocking: if network fails, game continues uninterrupted
+      });
+
+      // Update counters for subsequent scenes
+      setHintsCount((prev) => prev + (hintViewed ? 1 : 0));
+      setRiskyCount((prev) => prev + (isRisky ? 1 : 0));
+      setTimeoutsCount((prev) => prev + (timedOut ? 1 : 0));
+      setLastDecisionTimeSec(row.karar_suresi_sn);
     }
   };
 
@@ -69,6 +134,12 @@ export default function App() {
     setGoal(null);
     setChoices({});
     setTimeouts({});
+    setSessionId(generateSessionId());
+    setSessionRows([]);
+    setHintsCount(0);
+    setRiskyCount(0);
+    setTimeoutsCount(0);
+    setLastDecisionTimeSec(0);
     setDecisionIndex(0);
     setScreen('intake');
   };
@@ -76,6 +147,11 @@ export default function App() {
   const handleChangeAnswers = () => {
     setChoices({});
     setTimeouts({});
+    setSessionRows([]);
+    setHintsCount(0);
+    setRiskyCount(0);
+    setTimeoutsCount(0);
+    setLastDecisionTimeSec(0);
     setDecisionIndex(0);
     setScreen('scene');
   };
@@ -84,12 +160,26 @@ export default function App() {
     setLevel(newLevel);
     setChoices({});
     setTimeouts({});
+    setSessionRows([]);
+    setHintsCount(0);
+    setRiskyCount(0);
+    setTimeoutsCount(0);
+    setLastDecisionTimeSec(0);
     setDecisionIndex(0);
     setScreen('scene');
   };
 
   return (
-    <main className="min-h-screen bg-[#0B111E] text-[#DDE2F5] flex flex-col justify-center items-center">
+    <main className="min-h-screen bg-[#0B111E] text-[#DDE2F5] flex flex-col justify-center items-center relative">
+      {isCollectionMode && (
+        <div
+          data-testid="collection-indicator"
+          className="fixed top-2 right-2 z-50 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/40 rounded-full tracking-wide shadow-sm"
+        >
+          ● Data collection ON
+        </div>
+      )}
+
       {screen === 'intake' && (
         <IntakeScreen
           level={level}
@@ -119,6 +209,7 @@ export default function App() {
             goal || 'Internship prep',
             timeouts
           )}
+          sessionRows={sessionRows}
           onPlayAgain={handlePlayAgain}
           onChangeAnswers={handleChangeAnswers}
           onLevelChange={handleLevelChange}

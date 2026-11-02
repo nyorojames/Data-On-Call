@@ -14,7 +14,13 @@ interface SceneScreenProps {
   decisionIndex: number; // 0, 1, 2 (corresponding to Decision 1, 2, 3)
   level: PlayerLevel;
   goal: PlayerGoal;
-  onDecisionMade: (decisionId: number, choice: DecisionChoice, timedOut?: boolean) => void;
+  onDecisionMade: (
+    decisionId: number,
+    choice: DecisionChoice,
+    timedOut?: boolean,
+    decisionTimeSec?: number,
+    hintViewed?: boolean
+  ) => void;
   onNextDecision: () => void;
 }
 
@@ -37,6 +43,10 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
 
   // Hint state (Beginner mode)
   const [showHint, setShowHint] = useState(false);
+  const hintViewedRef = useRef<boolean>(false);
+
+  // Decision timing state
+  const sceneStartTimeRef = useRef<number>(Date.now());
 
   // Timer state (Experienced mode)
   const [timeLeft, setTimeLeft] = useState(60);
@@ -58,6 +68,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setShowBottomSheet(false);
     setConsequenceText('');
     setShowHint(false);
+    hintViewedRef.current = false;
+    sceneStartTimeRef.current = Date.now();
     setTimeLeft(60);
     setTutorReply(getTutorQuestionForDecision(currentDecision.id, goal, level));
     setUserInput('');
@@ -75,7 +87,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setIsTimedOut(true);
     setConsequenceText(riskyOption.result);
     setShowBottomSheet(true);
-    onDecisionMade(currentDecision.id, riskyOption.id, true);
+    const elapsedSec = Math.max(0, (Date.now() - sceneStartTimeRef.current) / 1000);
+    onDecisionMade(currentDecision.id, riskyOption.id, true, elapsedSec, hintViewedRef.current);
   };
 
   // Countdown timer for Experienced players
@@ -109,7 +122,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setSelectedChoice(optionId);
     setConsequenceText(option.result);
     setShowBottomSheet(true);
-    onDecisionMade(currentDecision.id, optionId, false);
+    const elapsedSec = Math.max(0, (Date.now() - sceneStartTimeRef.current) / 1000);
+    onDecisionMade(currentDecision.id, optionId, false, elapsedSec, hintViewedRef.current);
 
     // Goal = Use AI effectively: if Option C chosen in Decision 2, tutor asks follow-up
     if (currentDecision.id === 2 && goal === 'Use AI effectively' && optionId === 'C') {
@@ -229,7 +243,10 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
               <button
                 type="button"
                 data-testid="hint"
-                onClick={() => setShowHint(!showHint)}
+                onClick={() => {
+                  setShowHint(!showHint);
+                  hintViewedRef.current = true;
+                }}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded bg-[#1E293B] hover:bg-[#2A354A] text-[#F59E0B] border border-[#334155] transition-colors cursor-pointer"
               >
                 {showHint ? 'Hide hint' : 'Hint'}
