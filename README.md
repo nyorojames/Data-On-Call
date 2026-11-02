@@ -22,48 +22,68 @@ Data On-Call is a mobile-first scenario game where the player acts as the on-cal
 
 ---
 
-## Getting Started
+## Quick Start
 
-### 1. Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher recommended, tested on Node v24)
-- npm (v9 or higher)
-- Optional: [ffmpeg](https://ffmpeg.org/) (for demo video post-processing)
-
-### 2. Environment Setup
-Copy `.env.example` to `.env` or set the environment variable directly:
-
-In PowerShell (Windows):
-```powershell
-$env:GEMINI_API_KEY="your-gemini-api-key"
-```
-
-In bash/zsh (macOS/Linux):
-```bash
-export GEMINI_API_KEY="your-gemini-api-key"
-```
-
-### 3. Installation
-Install project dependencies:
 ```bash
 npm install
+pip install -r requirements.txt
+npm run app
 ```
+
+> **Note on Python virtual environment (optional):** You may optionally create and activate a virtual environment before installing Python dependencies:
+> ```bash
+> python -m venv .venv
+> # Windows PowerShell:
+> .venv\Scripts\Activate.ps1
+> # macOS/Linux:
+> source .venv/bin/activate
+> ```
 
 ---
 
-## Running the Application & Commands
+## Other Commands
 
+### Application & Data Collection
 | Command | Description | Local URL / Target |
 |---|---|---|
-| `npm run app` (or `npm start`) | Starts the Express server and Vite frontend | `http://localhost:3000` |
-| `npm run collect` | Starts the Express server in data collection mode (`DATA_COLLECTION=1`) listening on `0.0.0.0` | `http://localhost:3000` |
-| `npm run test:unit` | Executes Node.js unit tests for rules, AC7, and telemetry logic | Terminal output |
+| `npm run app` (or `npm start`) | Starts Express server and Vite frontend | `http://localhost:3000` |
+| `npm run collect` | Starts server in data collection mode (`DATA_COLLECTION=1`) bound to `0.0.0.0` | `http://localhost:3000` |
+
+### Testing
+| Command | Description | Target |
+|---|---|---|
+| `npm run test:unit` | Executes Node.js unit tests for rules, AC7, and telemetry | Terminal output |
 | `npm test` | Runs the full Cypress acceptance test suite (AC1–AC7) headless | Headless runner |
 | `npm run test:open` | Launches the interactive Cypress graphical test runner | Cypress UI |
+| `python -m pytest tests/test_train.py` | Runs Python unit tests for model training, gate, and parity | Terminal output |
+
+### Model Training & Telemetry Tools
+| Command | Description | Target |
+|---|---|---|
+| `python train.py` | Trains production model on `data/sessions.csv` (requires $\ge 15$ real sessions) | `model/` |
+| `python train.py --dev --data data/synthetic_dev.csv` | Trains dev model on synthetic data and packages artifacts | `build/dev/` |
+| `python scripts/make_synthetic.py` | Generates 300 synthetic gameplay rows (seed 42) | `data/synthetic_dev.csv` |
+| `python scripts/make_synthetic.py --noise-only` | Generates uninformative noise dataset for AC8 gate test | `data/synthetic_noise.csv` |
+| `python scripts/tag_participant.py <LABEL> --last-sessions <N>` | Tags last N sessions in `data/sessions.csv` with pseudonymous ID | `data/participants.csv` |
+| `python scripts/make_model_card.py` | Generates model card documentation from `config.json` | `model/README.md` |
+
+### Demo & LLM Evaluation
+| Command | Description | Target |
+|---|---|---|
 | `npm run demo` | Headless walkthrough recording and generates `cypress/videos/demo.mp4` (~60s) | Video output |
 | `npm run eval` | Evaluates 20 benchmark student messages and writes `eval/results.csv` | Output file |
 | `npm run merge-eval` | Merges retry results into `eval/results-run2.csv` with source tracking | Output file |
 | `npm run summarize-eval` | Validates labels and computes summary metrics from evaluation CSV | Terminal output |
 | `npm run lint` | Runs TypeScript type checking (`tsc --noEmit`) | Terminal output |
+
+---
+
+## Synthetic Data Generation (v2 Development)
+- **Script:** `scripts/make_synthetic.py`
+- **Pre-registered Seed:** `42`
+- **Generative Rule:** Generates ~100 sessions with 3 scenes each (~300 rows total). Risk probability $P(\text{chose\_risky} = 1)$ increases with Experienced level (`level = 1`, +1.3 log-odds), previous risky choices (`prev_risky_count`, +0.9 log-odds), and previous timeouts (`prev_timeout_count`, +1.1 log-odds), and decreases with prior hints requested (`prev_hints_used`, -1.3 log-odds), subject to Gaussian noise.
+- **Noise Mode:** When invoked with `--noise-only`, labels are generated as unbiased random coin flips ($p = 0.5$) independent of features to verify evaluation gate rejection under AC8.
+- **Safety Guard:** The generator strictly refuses to write synthetic rows into `data/sessions.csv`.
 
 ---
 
@@ -78,7 +98,9 @@ DataOnCall/
 ├── questions.md              # 18-question pre-written tutor bank and hints
 ├── spec.md                   # System specifications and acceptance criteria
 ├── package.json              # Scripts and project dependencies
+├── requirements.txt          # Pinned Python 3.14 dependencies (scikit-learn, ONNX)
 ├── server.ts                 # Express backend serving Vite and /api/tutor endpoint
+├── train.py                  # Model training pipeline, LOSO CV gate, ONNX packager
 ├── tsconfig.json             # TypeScript configuration
 ├── vite.config.ts            # Vite configuration with Tailwind CSS
 ├── cypress.config.js         # Cypress configuration (viewport 390x844, video: true)
@@ -91,6 +113,10 @@ DataOnCall/
 │   ├── support/
 │   │   └── e2e.js             # Cypress support configuration
 │   └── videos/                # Saved test and demo videos (e.g., demo.mp4)
+├── data/
+│   ├── DATA_DICTIONARY.md    # Schema specification and KVKK compliance notice
+│   ├── README.md             # Data collection runbook and validation instructions
+│   └── synthetic_dev.csv     # Synthetic gameplay data generated with seed 42
 ├── docs/
 │   └── ai-studio-sync-prompt.md # Copy-paste prompt for Google AI Studio sync
 ├── eval/
@@ -99,10 +125,17 @@ DataOnCall/
 │   ├── results.csv           # Run 1 evaluation results table
 │   └── results-run2.csv      # Run 2 final configuration evaluation results
 ├── scripts/
+│   ├── collect.js            # Cross-platform runner for data collection mode
+│   ├── make_model_card.py    # Generates Model Card README.md from config.json
+│   ├── make_synthetic.py     # Generates synthetic gameplay data with seed 42
 │   ├── merge-eval.js         # Merges rerun evaluation rows with source tracking
 │   ├── run-demo.js           # Headless demo runner and ffmpeg speed-adjuster
 │   ├── run-eval.js           # Automated eval test harness calling local tutor API
-│   └── summarize-eval.js     # Validates labels and prints evaluation breakdown
+│   ├── summarize-eval.js     # Validates labels and prints evaluation breakdown
+│   └── tag_participant.py    # Tags sessions with pseudonymous participant labels
+├── tests/
+│   ├── parity.json           # 5 benchmark feature vectors for probability parity
+│   └── test_train.py         # Pytest suite for training, LOSO gate, and parity
 └── src/
     ├── App.tsx               # Main application container and state machine
     ├── main.tsx              # React DOM entry point
