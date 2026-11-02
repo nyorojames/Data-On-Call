@@ -7,6 +7,21 @@ Data On-Call is a mobile-first scenario game where the player acts as the on-cal
 
 ---
 
+## Assignment File Map
+
+> **Note:** All files, code identifiers, comments, and CSV column headers in this repository are named in English on purpose for codebase consistency across frameworks and platforms.
+
+| Assignment Specification Name (TR) | Repository English Name | Description / Purpose |
+|---|---|---|
+| `data/oturumlar.csv` | `data/sessions.csv` | Player gameplay telemetry and decision records |
+| `data/SOZLUK.md` | `data/DATA_DICTIONARY.md` | Schema specification, data dictionary, and KVKK/data protection notice |
+| `tests/parite.json` | `tests/parity.json` | Benchmark feature vectors for probability parity verification |
+| `tests/parite.py` | `tests/parity.py` | Parity verification script comparing Python and web ONNX predictions |
+| `SINAV_TASARIMI.md` | `EXAM_DESIGN.md` | Exam and scenario design documentation |
+| Column: `kaynak` | Column: `source` | Telemetry provenance field (`"real"` or `"synthetic"`) |
+
+---
+
 ## Getting Started
 
 ### 1. Prerequisites
@@ -40,7 +55,8 @@ npm install
 | Command | Description | Local URL / Target |
 |---|---|---|
 | `npm run app` (or `npm start`) | Starts the Express server and Vite frontend | `http://localhost:3000` |
-| `npm run test:unit` | Executes Node.js unit tests for rules and AC7 logic | Terminal output |
+| `npm run collect` | Starts the Express server in data collection mode (`DATA_COLLECTION=1`) listening on `0.0.0.0` | `http://localhost:3000` |
+| `npm run test:unit` | Executes Node.js unit tests for rules, AC7, and telemetry logic | Terminal output |
 | `npm test` | Runs the full Cypress acceptance test suite (AC1–AC7) headless | Headless runner |
 | `npm run test:open` | Launches the interactive Cypress graphical test runner | Cypress UI |
 | `npm run demo` | Headless walkthrough recording and generates `cypress/videos/demo.mp4` (~60s) | Video output |

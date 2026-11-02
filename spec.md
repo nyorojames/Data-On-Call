@@ -161,16 +161,16 @@ A small tabular classification model (logistic regression or small decision tree
 All features are strictly known at scene start. Nothing from the current scene is used as an input feature (zero target/scene leakage).
 
 - **Input Features (7 total):**
-  - `seviye`: Player experience level (`0` = Beginner, `1` = Experienced).
-  - `hedef`: Player learning goal (`0` = Internship prep, `1` = Keep up with trends, `2` = Use AI effectively).
-  - `sahne_no`: Current scene number (`1`, `2`, or `3`).
-  - `onceki_ipucu_sayisi`: Total count of hints requested in earlier scenes (`0` in scene 1).
-  - `onceki_riskli_sayisi`: Total count of risky choices made in earlier scenes (`0` in scene 1).
-  - `onceki_timeout_sayisi`: Total count of timeouts in earlier scenes (`0` in scene 1).
-  - `onceki_karar_suresi_sn`: Decision duration in seconds from the immediately preceding scene (`0` in scene 1).
+  - `level`: Player experience level (`0` = Beginner, `1` = Experienced).
+  - `goal`: Player learning goal (`0` = Internship prep, `1` = Keep up with trends, `2` = Use AI effectively).
+  - `scene_no`: Current scene number (`1`, `2`, or `3`).
+  - `prev_hints_used`: Total count of hints requested in earlier scenes (`0` in scene 1).
+  - `prev_risky_count`: Total count of risky choices made in earlier scenes (`0` in scene 1).
+  - `prev_timeout_count`: Total count of timeouts in earlier scenes (`0` in scene 1).
+  - `prev_decision_time_sec`: Decision duration in seconds from the immediately preceding scene (`0` in scene 1).
 
 - **Target Label:**
-  - `secim_riskli`: Binary label (`1` if the player's choice in this scene was risky or resulted in a timeout, `0` if good choice).
+  - `chose_risky`: Binary label (`1` if the player's choice in this scene was risky or resulted in a timeout, `0` if good choice).
 
 ### 10.3 Metric & Threshold Gate
 Fixed strictly prior to training:
@@ -179,7 +179,7 @@ Fixed strictly prior to training:
 - If the model fails to meet both criteria, the training gate fails and `model.onnx` is not published.
 
 ### 10.4 Runtime Behavior Change
-- At the start of a scene, the ONNX model computes $P(\text{secim\_riskli} = 1)$.
+- At the start of a scene, the ONNX model computes $P(\text{chose\_risky} = 1)$.
 - If predicted risk $\ge 0.5$:
   - The AI tutor proactively displays a guiding question before the player makes their selection.
   - If the player is in Experienced mode, the 60-second countdown timer pauses to allow reflection.
@@ -189,7 +189,7 @@ Fixed strictly prior to training:
 ### 10.5 Acceptance Examples
 
 **AC8: The training gate protects production**
-- Given real session data in `data/oturumlar.csv`
+- Given real session data in `data/sessions.csv`
 - When `train.py` executes cross-validation and accuracy is below 0.60 or does not exceed the majority-class baseline
 - Then `train.py` exits with a non-zero error code and writes no `model.onnx` artifact.
 
@@ -199,7 +199,7 @@ Fixed strictly prior to training:
 - Then the tutor surfaces a proactive guiding question before a choice is made, and an Experienced player's timer is paused.
 
 **AC10: Model inference parity**
-- Given the 5 benchmark feature vectors defined in `tests/parite.json`
+- Given the 5 benchmark feature vectors defined in `tests/parity.json`
 - When probability predictions are calculated in the web application and in Python scikit-learn
 - Then the predicted probabilities differ by less than $1 \times 10^{-4}$ for every benchmark vector.
 
