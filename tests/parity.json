@@ -1,0 +1,22 @@
+[
+  {
+    "description": "Beginner player starting scene 1 with internship goal",
+    "features": [0, 0, 1, 0, 0, 0, 0.0]
+  },
+  {
+    "description": "Experienced player starting scene 1 with trend-tracking goal",
+    "features": [1, 1, 1, 0, 0, 0, 0.0]
+  },
+  {
+    "description": "Cautious beginner in scene 2 who used a hint in scene 1",
+    "features": [0, 2, 2, 1, 0, 0, 15.2]
+  },
+  {
+    "description": "Experienced player in scene 2 following a risky choice in scene 1",
+    "features": [1, 0, 2, 0, 1, 0, 28.4]
+  },
+  {
+    "description": "Experienced player in scene 3 following multiple risky choices and a timeout",
+    "features": [1, 2, 3, 0, 2, 1, 60.0]
+  }
+]
