@@ -8,18 +8,18 @@ describe('Data Logging & Telemetry', () => {
 
     // 2. Verify POST /api/log returns 204 with X-Data-Collection: false outside collection mode
     const dummyPayload = {
-      oturum: '0123456789abcdef0123456789abcdef',
-      sahne_no: 1,
-      seviye: 0,
-      hedef: 0,
-      onceki_ipucu_sayisi: 0,
-      onceki_riskli_sayisi: 0,
-      onceki_timeout_sayisi: 0,
-      onceki_karar_suresi_sn: 0,
-      ipucu_bu_sahne: 0,
-      karar_suresi_sn: 10,
-      secim_riskli: 0,
-      kaynak: 'gercek',
+      session_id: '0123456789abcdef0123456789abcdef',
+      scene_no: 1,
+      level: 0,
+      goal: 0,
+      prev_hints_used: 0,
+      prev_risky_count: 0,
+      prev_timeout_count: 0,
+      prev_decision_time_sec: 0,
+      hint_used_this_scene: 0,
+      decision_time_sec: 10,
+      chose_risky: 0,
+      source: 'real',
     };
 
     cy.request({
@@ -71,16 +71,16 @@ describe('Data Logging & Telemetry', () => {
 
     cy.wait('@logRecord').then((interception) => {
       const body = interception.request.body;
-      expect(body.sahne_no).to.eq(1);
-      expect(body.seviye).to.eq(1); // Experienced
-      expect(body.hedef).to.eq(2); // Use AI effectively
-      expect(body.onceki_ipucu_sayisi).to.eq(0);
-      expect(body.onceki_riskli_sayisi).to.eq(0);
-      expect(body.onceki_timeout_sayisi).to.eq(0);
-      expect(body.onceki_karar_suresi_sn).to.eq(0);
-      expect(body.secim_riskli).to.eq(1); // Timeout is risky
-      expect(body.kaynak).to.eq('gercek');
-      expect(body.oturum).to.match(/^[a-f0-9]{32}$/);
+      expect(body.scene_no).to.eq(1);
+      expect(body.level).to.eq(1); // Experienced
+      expect(body.goal).to.eq(2); // Use AI effectively
+      expect(body.prev_hints_used).to.eq(0);
+      expect(body.prev_risky_count).to.eq(0);
+      expect(body.prev_timeout_count).to.eq(0);
+      expect(body.prev_decision_time_sec).to.eq(0);
+      expect(body.chose_risky).to.eq(1); // Timeout is risky
+      expect(body.source).to.eq('real');
+      expect(body.session_id).to.match(/^[a-f0-9]{32}$/);
     });
 
     cy.get('[data-testid="consequence"]').should('be.visible');
@@ -91,13 +91,13 @@ describe('Data Logging & Telemetry', () => {
 
     cy.wait('@logRecord').then((interception) => {
       const body = interception.request.body;
-      expect(body.sahne_no).to.eq(2);
-      expect(body.seviye).to.eq(1);
-      expect(body.hedef).to.eq(2);
-      expect(body.onceki_riskli_sayisi).to.eq(1); // 1 prior risky choice (timeout in D1)
-      expect(body.onceki_timeout_sayisi).to.eq(1); // 1 prior timeout in D1
-      expect(body.secim_riskli).to.eq(0); // Option A is good
-      expect(body.kaynak).to.eq('gercek');
+      expect(body.scene_no).to.eq(2);
+      expect(body.level).to.eq(1);
+      expect(body.goal).to.eq(2);
+      expect(body.prev_risky_count).to.eq(1); // 1 prior risky choice (timeout in D1)
+      expect(body.prev_timeout_count).to.eq(1); // 1 prior timeout in D1
+      expect(body.chose_risky).to.eq(0); // Option A is good
+      expect(body.source).to.eq('real');
     });
 
     cy.get('[data-testid="consequence"]').should('be.visible');
@@ -108,13 +108,13 @@ describe('Data Logging & Telemetry', () => {
 
     cy.wait('@logRecord').then((interception) => {
       const body = interception.request.body;
-      expect(body.sahne_no).to.eq(3);
-      expect(body.seviye).to.eq(1);
-      expect(body.hedef).to.eq(2);
-      expect(body.onceki_riskli_sayisi).to.eq(1); // D1 was risky, D2 was good
-      expect(body.onceki_timeout_sayisi).to.eq(1);
-      expect(body.secim_riskli).to.eq(1); // Option B is risky
-      expect(body.kaynak).to.eq('gercek');
+      expect(body.scene_no).to.eq(3);
+      expect(body.level).to.eq(1);
+      expect(body.goal).to.eq(2);
+      expect(body.prev_risky_count).to.eq(1); // D1 was risky, D2 was good
+      expect(body.prev_timeout_count).to.eq(1);
+      expect(body.chose_risky).to.eq(1); // Option B is risky
+      expect(body.source).to.eq('real');
     });
 
     cy.get('[data-testid="consequence"]').should('be.visible');
