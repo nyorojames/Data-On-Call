@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
@@ -193,6 +194,21 @@ app.post('/api/log', (req: Request, res: Response) => {
   }
 });
 
+function getLocalIpAddress(): string | null {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    const ifaceList = interfaces[name];
+    if (ifaceList) {
+      for (const iface of ifaceList) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          return iface.address;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -212,11 +228,16 @@ async function startServer() {
   const HOST = isCollectionMode ? '0.0.0.0' : '127.0.0.1';
 
   app.listen(PORT, HOST, () => {
-    console.log(
-      `Server listening on http://${HOST}:${PORT} (Data collection: ${
-        isCollectionMode ? 'ON' : 'OFF'
-      })`
-    );
+    if (isCollectionMode) {
+      const localIp = getLocalIpAddress();
+      console.log(`Data collection: ON`);
+      console.log(`Open http://localhost:${PORT} on this computer`);
+      if (localIp) {
+        console.log(`Other devices on the same Wi-Fi: http://${localIp}:${PORT}`);
+      }
+    } else {
+      console.log(`Server listening on http://localhost:${PORT} (Data collection: OFF)`);
+    }
   });
 }
 
