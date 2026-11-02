@@ -151,3 +151,55 @@ See the README's Product Decisions section.
 - TechTrends Kenya (2026-03-17): swap networks use station and battery data to redirect riders and monitor battery health. https://techtrendske.co.ke/2026/03/17/bolt-electric-motorbike-strategy-kenya
 - Serrari Group: Zeno's cloud operating system with real-time visibility into battery state, rider behaviour and station performance. https://serrarigroup.com/?p=34733
 - Imperial College London, ChargeUp! Data Swap: scarcity of e-motorcycle usage data in African cities. https://www.imperial.ac.uk/energy-futures-lab/research/chargeup/
+
+## 10. v2: Learned adaptation
+
+### 10.1 Model Requirement
+A small tabular classification model (logistic regression or small decision tree, trained with scikit-learn and exported to ONNX format) that runs client-side to predict, at the **START** of a scene before any user interaction, whether the player will choose the risky option in that scene.
+
+### 10.2 Features & Label
+All features are strictly known at scene start. Nothing from the current scene is used as an input feature (zero target/scene leakage).
+
+- **Input Features (7 total):**
+  - `seviye`: Player experience level (`0` = Beginner, `1` = Experienced).
+  - `hedef`: Player learning goal (`0` = Internship prep, `1` = Keep up with trends, `2` = Use AI effectively).
+  - `sahne_no`: Current scene number (`1`, `2`, or `3`).
+  - `onceki_ipucu_sayisi`: Total count of hints requested in earlier scenes (`0` in scene 1).
+  - `onceki_riskli_sayisi`: Total count of risky choices made in earlier scenes (`0` in scene 1).
+  - `onceki_timeout_sayisi`: Total count of timeouts in earlier scenes (`0` in scene 1).
+  - `onceki_karar_suresi_sn`: Decision duration in seconds from the immediately preceding scene (`0` in scene 1).
+
+- **Target Label:**
+  - `secim_riskli`: Binary label (`1` if the player's choice in this scene was risky or resulted in a timeout, `0` if good choice).
+
+### 10.3 Metric & Threshold Gate
+Fixed strictly prior to training:
+- The evaluation metric is accuracy under leave-one-session-out (or grouped-by-person) cross-validation on real gameplay sessions.
+- **Threshold Gate:** Accuracy must be at least **0.60** AND strictly higher than the majority-class baseline.
+- If the model fails to meet both criteria, the training gate fails and `model.onnx` is not published.
+
+### 10.4 Runtime Behavior Change
+- At the start of a scene, the ONNX model computes $P(\text{secim\_riskli} = 1)$.
+- If predicted risk $\ge 0.5$:
+  - The AI tutor proactively displays a guiding question before the player makes their selection.
+  - If the player is in Experienced mode, the 60-second countdown timer pauses to allow reflection.
+- If predicted risk $< 0.5$:
+  - Gameplay behavior remains unchanged (standard v1 behavior).
+
+### 10.5 Acceptance Examples
+
+**AC8: The training gate protects production**
+- Given real session data in `data/oturumlar.csv`
+- When `train.py` executes cross-validation and accuracy is below 0.60 or does not exceed the majority-class baseline
+- Then `train.py` exits with a non-zero error code and writes no `model.onnx` artifact.
+
+**AC9: Proactive adaptation on elevated risk**
+- Given an active playthrough at the start of a scene
+- When the runtime model evaluates the scene start features and predicts risk $\ge 0.5$
+- Then the tutor surfaces a proactive guiding question before a choice is made, and an Experienced player's timer is paused.
+
+**AC10: Model inference parity**
+- Given the 5 benchmark feature vectors defined in `tests/parite.json`
+- When probability predictions are calculated in the web application and in Python scikit-learn
+- Then the predicted probabilities differ by less than $1 \times 10^{-4}$ for every benchmark vector.
+
