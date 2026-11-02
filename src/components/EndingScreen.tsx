@@ -27,7 +27,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `session-${sessionRows[0]?.oturum || 'data'}.csv`);
+    link.setAttribute('download', `session-${sessionRows[0]?.session_id || 'data'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

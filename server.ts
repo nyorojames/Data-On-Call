@@ -170,7 +170,7 @@ app.post('/api/log', (req: Request, res: Response) => {
 
   try {
     const dataDir = path.resolve(__dirname, 'data');
-    const csvPath = path.join(dataDir, 'oturumlar.csv');
+    const csvPath = path.join(dataDir, 'sessions.csv');
 
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });

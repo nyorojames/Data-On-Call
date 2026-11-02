@@ -117,7 +117,7 @@ export default function App() {
       setHintsCount((prev) => prev + (hintViewed ? 1 : 0));
       setRiskyCount((prev) => prev + (isRisky ? 1 : 0));
       setTimeoutsCount((prev) => prev + (timedOut ? 1 : 0));
-      setLastDecisionTimeSec(row.karar_suresi_sn);
+      setLastDecisionTimeSec(row.decision_time_sec);
     }
   };
 
