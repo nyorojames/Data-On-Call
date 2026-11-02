@@ -47,18 +47,18 @@ test('buildTelemetryRow correctly constructs Scene 1 row with zero previous valu
   });
 
   assert.deepEqual(row, {
-    oturum: sessionId,
-    sahne_no: 1,
-    seviye: 0,
-    hedef: 0,
-    onceki_ipucu_sayisi: 0,
-    onceki_riskli_sayisi: 0,
-    onceki_timeout_sayisi: 0,
-    onceki_karar_suresi_sn: 0,
-    ipucu_bu_sahne: 1,
-    karar_suresi_sn: 14.52,
-    secim_riskli: 0,
-    kaynak: 'gercek',
+    session_id: sessionId,
+    scene_no: 1,
+    level: 0,
+    goal: 0,
+    prev_hints_used: 0,
+    prev_risky_count: 0,
+    prev_timeout_count: 0,
+    prev_decision_time_sec: 0,
+    hint_used_this_scene: 1,
+    decision_time_sec: 14.52,
+    chose_risky: 0,
+    source: 'real',
   });
 });
 
@@ -79,65 +79,65 @@ test('buildTelemetryRow correctly propagates previous counts for Scene 2', () =>
   });
 
   assert.deepEqual(row, {
-    oturum: sessionId,
-    sahne_no: 2,
-    seviye: 1,
-    hedef: 2,
-    onceki_ipucu_sayisi: 1,
-    onceki_riskli_sayisi: 1,
-    onceki_timeout_sayisi: 1,
-    onceki_karar_suresi_sn: 25.1,
-    ipucu_bu_sahne: 0,
-    karar_suresi_sn: 32.4,
-    secim_riskli: 1,
-    kaynak: 'gercek',
+    session_id: sessionId,
+    scene_no: 2,
+    level: 1,
+    goal: 2,
+    prev_hints_used: 1,
+    prev_risky_count: 1,
+    prev_timeout_count: 1,
+    prev_decision_time_sec: 25.1,
+    hint_used_this_scene: 0,
+    decision_time_sec: 32.4,
+    chose_risky: 1,
+    source: 'real',
   });
 });
 
 test('formatCsvRow and formatCsvFile generate expected CSV formatting', () => {
   const row: TelemetryRow = {
-    oturum: 'abc0123456789abcdef0123456789abc',
-    sahne_no: 1,
-    seviye: 0,
-    hedef: 1,
-    onceki_ipucu_sayisi: 0,
-    onceki_riskli_sayisi: 0,
-    onceki_timeout_sayisi: 0,
-    onceki_karar_suresi_sn: 0,
-    ipucu_bu_sahne: 0,
-    karar_suresi_sn: 12.34,
-    secim_riskli: 0,
-    kaynak: 'gercek',
+    session_id: 'abc0123456789abcdef0123456789abc',
+    scene_no: 1,
+    level: 0,
+    goal: 1,
+    prev_hints_used: 0,
+    prev_risky_count: 0,
+    prev_timeout_count: 0,
+    prev_decision_time_sec: 0,
+    hint_used_this_scene: 0,
+    decision_time_sec: 12.34,
+    chose_risky: 0,
+    source: 'real',
   };
 
   const formattedRow = formatCsvRow(row);
   assert.equal(
     formattedRow,
-    'abc0123456789abcdef0123456789abc,1,0,1,0,0,0,0,0,12.34,0,gercek'
+    'abc0123456789abcdef0123456789abc,1,0,1,0,0,0,0,0,12.34,0,real'
   );
 
   const formattedFile = formatCsvFile([row]);
   assert.equal(
     formattedFile,
-    'oturum,sahne_no,seviye,hedef,onceki_ipucu_sayisi,onceki_riskli_sayisi,onceki_timeout_sayisi,onceki_karar_suresi_sn,ipucu_bu_sahne,karar_suresi_sn,secim_riskli,kaynak\n' +
-      'abc0123456789abcdef0123456789abc,1,0,1,0,0,0,0,0,12.34,0,gercek\n'
+    'session_id,scene_no,level,goal,prev_hints_used,prev_risky_count,prev_timeout_count,prev_decision_time_sec,hint_used_this_scene,decision_time_sec,chose_risky,source\n' +
+      'abc0123456789abcdef0123456789abc,1,0,1,0,0,0,0,0,12.34,0,real\n'
   );
 });
 
 test('validateTelemetryPayload succeeds on valid payload', () => {
   const valid = {
-    oturum: '0123456789abcdef0123456789abcdef',
-    sahne_no: 2,
-    seviye: 1,
-    hedef: 2,
-    onceki_ipucu_sayisi: 1,
-    onceki_riskli_sayisi: 0,
-    onceki_timeout_sayisi: 0,
-    onceki_karar_suresi_sn: 18.2,
-    ipucu_bu_sahne: 0,
-    karar_suresi_sn: 24.5,
-    secim_riskli: 1,
-    kaynak: 'gercek',
+    session_id: '0123456789abcdef0123456789abcdef',
+    scene_no: 2,
+    level: 1,
+    goal: 2,
+    prev_hints_used: 1,
+    prev_risky_count: 0,
+    prev_timeout_count: 0,
+    prev_decision_time_sec: 18.2,
+    hint_used_this_scene: 0,
+    decision_time_sec: 24.5,
+    chose_risky: 1,
+    source: 'real',
   };
 
   const res = validateTelemetryPayload(valid);
@@ -152,23 +152,23 @@ test('validateTelemetryPayload rejects invalid payloads with descriptive errors'
   assert.equal(validateTelemetryPayload([]).valid, false);
 
   const base = {
-    oturum: '0123456789abcdef0123456789abcdef',
-    sahne_no: 1,
-    seviye: 0,
-    hedef: 0,
-    onceki_ipucu_sayisi: 0,
-    onceki_riskli_sayisi: 0,
-    onceki_timeout_sayisi: 0,
-    onceki_karar_suresi_sn: 0,
-    ipucu_bu_sahne: 0,
-    karar_suresi_sn: 10,
-    secim_riskli: 0,
-    kaynak: 'gercek',
+    session_id: '0123456789abcdef0123456789abcdef',
+    scene_no: 1,
+    level: 0,
+    goal: 0,
+    prev_hints_used: 0,
+    prev_risky_count: 0,
+    prev_timeout_count: 0,
+    prev_decision_time_sec: 0,
+    hint_used_this_scene: 0,
+    decision_time_sec: 10,
+    chose_risky: 0,
+    source: 'real',
   };
 
   // Missing field
   const missing = { ...base };
-  delete (missing as Record<string, unknown>).kaynak;
+  delete (missing as Record<string, unknown>).source;
   assert.equal(validateTelemetryPayload(missing).valid, false);
 
   // Extra unexpected field
@@ -177,74 +177,74 @@ test('validateTelemetryPayload rejects invalid payloads with descriptive errors'
     false
   );
 
-  // Invalid oturum (free text / non-hex)
+  // Invalid session_id (free text / non-hex)
   assert.equal(
-    validateTelemetryPayload({ ...base, oturum: 'user-name-123' }).valid,
+    validateTelemetryPayload({ ...base, session_id: 'user-name-123' }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, oturum: 'DROP TABLE users;' }).valid,
+    validateTelemetryPayload({ ...base, session_id: 'DROP TABLE users;' }).valid,
     false
   );
 
-  // Invalid sahne_no
-  assert.equal(validateTelemetryPayload({ ...base, sahne_no: 0 }).valid, false);
-  assert.equal(validateTelemetryPayload({ ...base, sahne_no: 4 }).valid, false);
-  assert.equal(validateTelemetryPayload({ ...base, sahne_no: 1.5 }).valid, false);
+  // Invalid scene_no
+  assert.equal(validateTelemetryPayload({ ...base, scene_no: 0 }).valid, false);
+  assert.equal(validateTelemetryPayload({ ...base, scene_no: 4 }).valid, false);
+  assert.equal(validateTelemetryPayload({ ...base, scene_no: 1.5 }).valid, false);
 
-  // Invalid seviye
-  assert.equal(validateTelemetryPayload({ ...base, seviye: 2 }).valid, false);
-  assert.equal(validateTelemetryPayload({ ...base, seviye: -1 }).valid, false);
+  // Invalid level
+  assert.equal(validateTelemetryPayload({ ...base, level: 2 }).valid, false);
+  assert.equal(validateTelemetryPayload({ ...base, level: -1 }).valid, false);
 
-  // Invalid hedef
-  assert.equal(validateTelemetryPayload({ ...base, hedef: 3 }).valid, false);
-  assert.equal(validateTelemetryPayload({ ...base, hedef: -1 }).valid, false);
+  // Invalid goal
+  assert.equal(validateTelemetryPayload({ ...base, goal: 3 }).valid, false);
+  assert.equal(validateTelemetryPayload({ ...base, goal: -1 }).valid, false);
 
   // Invalid counts (< 0 or > 3)
   assert.equal(
-    validateTelemetryPayload({ ...base, onceki_ipucu_sayisi: -1 }).valid,
+    validateTelemetryPayload({ ...base, prev_hints_used: -1 }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, onceki_ipucu_sayisi: 4 }).valid,
+    validateTelemetryPayload({ ...base, prev_hints_used: 4 }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, onceki_riskli_sayisi: 4 }).valid,
+    validateTelemetryPayload({ ...base, prev_risky_count: 4 }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, onceki_timeout_sayisi: 4 }).valid,
+    validateTelemetryPayload({ ...base, prev_timeout_count: 4 }).valid,
     false
   );
 
   // Invalid times (< 0 or NaN)
   assert.equal(
-    validateTelemetryPayload({ ...base, onceki_karar_suresi_sn: -5 }).valid,
+    validateTelemetryPayload({ ...base, prev_decision_time_sec: -5 }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, karar_suresi_sn: NaN }).valid,
+    validateTelemetryPayload({ ...base, decision_time_sec: NaN }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, karar_suresi_sn: 1000 }).valid,
+    validateTelemetryPayload({ ...base, decision_time_sec: 1000 }).valid,
     false
   );
 
   // Invalid binary flags
   assert.equal(
-    validateTelemetryPayload({ ...base, ipucu_bu_sahne: 2 }).valid,
+    validateTelemetryPayload({ ...base, hint_used_this_scene: 2 }).valid,
     false
   );
   assert.equal(
-    validateTelemetryPayload({ ...base, secim_riskli: 2 }).valid,
+    validateTelemetryPayload({ ...base, chose_risky: 2 }).valid,
     false
   );
 
-  // Invalid kaynak
+  // Invalid source
   assert.equal(
-    validateTelemetryPayload({ ...base, kaynak: 'synthetic' }).valid,
+    validateTelemetryPayload({ ...base, source: 'invalid_source' }).valid,
     false
   );
 });

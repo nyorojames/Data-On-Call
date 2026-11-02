@@ -1,33 +1,33 @@
 import { PlayerLevel, PlayerGoal } from './rules.ts';
 
 export interface TelemetryRow {
-  oturum: string;
-  sahne_no: number;
-  seviye: number;
-  hedef: number;
-  onceki_ipucu_sayisi: number;
-  onceki_riskli_sayisi: number;
-  onceki_timeout_sayisi: number;
-  onceki_karar_suresi_sn: number;
-  ipucu_bu_sahne: number;
-  karar_suresi_sn: number;
-  secim_riskli: number;
-  kaynak: 'gercek';
+  session_id: string;
+  scene_no: number;
+  level: number;
+  goal: number;
+  prev_hints_used: number;
+  prev_risky_count: number;
+  prev_timeout_count: number;
+  prev_decision_time_sec: number;
+  hint_used_this_scene: number;
+  decision_time_sec: number;
+  chose_risky: number;
+  source: 'real' | 'synthetic';
 }
 
 export const CSV_HEADERS = [
-  'oturum',
-  'sahne_no',
-  'seviye',
-  'hedef',
-  'onceki_ipucu_sayisi',
-  'onceki_riskli_sayisi',
-  'onceki_timeout_sayisi',
-  'onceki_karar_suresi_sn',
-  'ipucu_bu_sahne',
-  'karar_suresi_sn',
-  'secim_riskli',
-  'kaynak',
+  'session_id',
+  'scene_no',
+  'level',
+  'goal',
+  'prev_hints_used',
+  'prev_risky_count',
+  'prev_timeout_count',
+  'prev_decision_time_sec',
+  'hint_used_this_scene',
+  'decision_time_sec',
+  'chose_risky',
+  'source',
 ] as const;
 
 export function mapLevelToCode(level: PlayerLevel): number {
@@ -82,37 +82,38 @@ export function buildTelemetryRow(params: {
   hintViewedInThisScene: boolean;
   decisionTimeSec: number;
   isRiskyChoiceOrTimeout: boolean;
+  source?: 'real' | 'synthetic';
 }): TelemetryRow {
   return {
-    oturum: params.sessionId,
-    sahne_no: params.sceneNumber,
-    seviye: mapLevelToCode(params.level),
-    hedef: mapGoalToCode(params.goal),
-    onceki_ipucu_sayisi: params.previousHintsCount,
-    onceki_riskli_sayisi: params.previousRiskyCount,
-    onceki_timeout_sayisi: params.previousTimeoutsCount,
-    onceki_karar_suresi_sn: Math.round(params.previousDecisionTimeSec * 100) / 100,
-    ipucu_bu_sahne: params.hintViewedInThisScene ? 1 : 0,
-    karar_suresi_sn: Math.round(params.decisionTimeSec * 100) / 100,
-    secim_riskli: params.isRiskyChoiceOrTimeout ? 1 : 0,
-    kaynak: 'gercek',
+    session_id: params.sessionId,
+    scene_no: params.sceneNumber,
+    level: mapLevelToCode(params.level),
+    goal: mapGoalToCode(params.goal),
+    prev_hints_used: params.previousHintsCount,
+    prev_risky_count: params.previousRiskyCount,
+    prev_timeout_count: params.previousTimeoutsCount,
+    prev_decision_time_sec: Math.round(params.previousDecisionTimeSec * 100) / 100,
+    hint_used_this_scene: params.hintViewedInThisScene ? 1 : 0,
+    decision_time_sec: Math.round(params.decisionTimeSec * 100) / 100,
+    chose_risky: params.isRiskyChoiceOrTimeout ? 1 : 0,
+    source: params.source || 'real',
   };
 }
 
 export function formatCsvRow(row: TelemetryRow): string {
   return [
-    row.oturum,
-    row.sahne_no,
-    row.seviye,
-    row.hedef,
-    row.onceki_ipucu_sayisi,
-    row.onceki_riskli_sayisi,
-    row.onceki_timeout_sayisi,
-    row.onceki_karar_suresi_sn,
-    row.ipucu_bu_sahne,
-    row.karar_suresi_sn,
-    row.secim_riskli,
-    row.kaynak,
+    row.session_id,
+    row.scene_no,
+    row.level,
+    row.goal,
+    row.prev_hints_used,
+    row.prev_risky_count,
+    row.prev_timeout_count,
+    row.prev_decision_time_sec,
+    row.hint_used_this_scene,
+    row.decision_time_sec,
+    row.chose_risky,
+    row.source,
   ].join(',');
 }
 
@@ -153,131 +154,131 @@ export function validateTelemetryPayload(payload: unknown): ValidationResult {
     }
   }
 
-  // 1. oturum
-  if (typeof obj.oturum !== 'string' || !HEX_REGEX.test(obj.oturum)) {
+  // 1. session_id
+  if (typeof obj.session_id !== 'string' || !HEX_REGEX.test(obj.session_id)) {
     return {
       valid: false,
-      error: 'Field "oturum" must be a 16-64 hex character string without free text',
+      error: 'Field "session_id" must be a 16-64 hex character string without free text',
     };
   }
 
-  // 2. sahne_no (1..3)
-  if (!Number.isInteger(obj.sahne_no) || (obj.sahne_no as number) < 1 || (obj.sahne_no as number) > 3) {
-    return { valid: false, error: 'Field "sahne_no" must be an integer between 1 and 3' };
+  // 2. scene_no (1..3)
+  if (!Number.isInteger(obj.scene_no) || (obj.scene_no as number) < 1 || (obj.scene_no as number) > 3) {
+    return { valid: false, error: 'Field "scene_no" must be an integer between 1 and 3' };
   }
 
-  // 3. seviye (0 or 1)
-  if (!Number.isInteger(obj.seviye) || ((obj.seviye as number) !== 0 && (obj.seviye as number) !== 1)) {
-    return { valid: false, error: 'Field "seviye" must be 0 (Beginner) or 1 (Experienced)' };
+  // 3. level (0 or 1)
+  if (!Number.isInteger(obj.level) || ((obj.level as number) !== 0 && (obj.level as number) !== 1)) {
+    return { valid: false, error: 'Field "level" must be 0 (Beginner) or 1 (Experienced)' };
   }
 
-  // 4. hedef (0, 1, or 2)
+  // 4. goal (0, 1, or 2)
   if (
-    !Number.isInteger(obj.hedef) ||
-    (obj.hedef as number) < 0 ||
-    (obj.hedef as number) > 2
+    !Number.isInteger(obj.goal) ||
+    (obj.goal as number) < 0 ||
+    (obj.goal as number) > 2
   ) {
-    return { valid: false, error: 'Field "hedef" must be an integer between 0 and 2' };
+    return { valid: false, error: 'Field "goal" must be an integer between 0 and 2' };
   }
 
-  // 5. onceki_ipucu_sayisi (integer 0..3)
+  // 5. prev_hints_used (integer 0..3)
   if (
-    !Number.isInteger(obj.onceki_ipucu_sayisi) ||
-    (obj.onceki_ipucu_sayisi as number) < 0 ||
-    (obj.onceki_ipucu_sayisi as number) > 3
-  ) {
-    return {
-      valid: false,
-      error: 'Field "onceki_ipucu_sayisi" must be an integer between 0 and 3',
-    };
-  }
-
-  // 6. onceki_riskli_sayisi (integer 0..3)
-  if (
-    !Number.isInteger(obj.onceki_riskli_sayisi) ||
-    (obj.onceki_riskli_sayisi as number) < 0 ||
-    (obj.onceki_riskli_sayisi as number) > 3
+    !Number.isInteger(obj.prev_hints_used) ||
+    (obj.prev_hints_used as number) < 0 ||
+    (obj.prev_hints_used as number) > 3
   ) {
     return {
       valid: false,
-      error: 'Field "onceki_riskli_sayisi" must be an integer between 0 and 3',
+      error: 'Field "prev_hints_used" must be an integer between 0 and 3',
     };
   }
 
-  // 7. onceki_timeout_sayisi (integer 0..3)
+  // 6. prev_risky_count (integer 0..3)
   if (
-    !Number.isInteger(obj.onceki_timeout_sayisi) ||
-    (obj.onceki_timeout_sayisi as number) < 0 ||
-    (obj.onceki_timeout_sayisi as number) > 3
+    !Number.isInteger(obj.prev_risky_count) ||
+    (obj.prev_risky_count as number) < 0 ||
+    (obj.prev_risky_count as number) > 3
   ) {
     return {
       valid: false,
-      error: 'Field "onceki_timeout_sayisi" must be an integer between 0 and 3',
+      error: 'Field "prev_risky_count" must be an integer between 0 and 3',
     };
   }
 
-  // 8. onceki_karar_suresi_sn (number >= 0, <= 600)
+  // 7. prev_timeout_count (integer 0..3)
   if (
-    typeof obj.onceki_karar_suresi_sn !== 'number' ||
-    !Number.isFinite(obj.onceki_karar_suresi_sn) ||
-    (obj.onceki_karar_suresi_sn as number) < 0 ||
-    (obj.onceki_karar_suresi_sn as number) > 600
+    !Number.isInteger(obj.prev_timeout_count) ||
+    (obj.prev_timeout_count as number) < 0 ||
+    (obj.prev_timeout_count as number) > 3
   ) {
     return {
       valid: false,
-      error: 'Field "onceki_karar_suresi_sn" must be a finite number between 0 and 600',
+      error: 'Field "prev_timeout_count" must be an integer between 0 and 3',
     };
   }
 
-  // 9. ipucu_bu_sahne (0 or 1)
+  // 8. prev_decision_time_sec (number >= 0, <= 600)
   if (
-    !Number.isInteger(obj.ipucu_bu_sahne) ||
-    ((obj.ipucu_bu_sahne as number) !== 0 && (obj.ipucu_bu_sahne as number) !== 1)
-  ) {
-    return { valid: false, error: 'Field "ipucu_bu_sahne" must be 0 or 1' };
-  }
-
-  // 10. karar_suresi_sn (number >= 0, <= 600)
-  if (
-    typeof obj.karar_suresi_sn !== 'number' ||
-    !Number.isFinite(obj.karar_suresi_sn) ||
-    (obj.karar_suresi_sn as number) < 0 ||
-    (obj.karar_suresi_sn as number) > 600
+    typeof obj.prev_decision_time_sec !== 'number' ||
+    !Number.isFinite(obj.prev_decision_time_sec) ||
+    (obj.prev_decision_time_sec as number) < 0 ||
+    (obj.prev_decision_time_sec as number) > 600
   ) {
     return {
       valid: false,
-      error: 'Field "karar_suresi_sn" must be a finite number between 0 and 600',
+      error: 'Field "prev_decision_time_sec" must be a finite number between 0 and 600',
     };
   }
 
-  // 11. secim_riskli (0 or 1)
+  // 9. hint_used_this_scene (0 or 1)
   if (
-    !Number.isInteger(obj.secim_riskli) ||
-    ((obj.secim_riskli as number) !== 0 && (obj.secim_riskli as number) !== 1)
+    !Number.isInteger(obj.hint_used_this_scene) ||
+    ((obj.hint_used_this_scene as number) !== 0 && (obj.hint_used_this_scene as number) !== 1)
   ) {
-    return { valid: false, error: 'Field "secim_riskli" must be 0 or 1' };
+    return { valid: false, error: 'Field "hint_used_this_scene" must be 0 or 1' };
   }
 
-  // 12. kaynak ("gercek" only)
-  if (obj.kaynak !== 'gercek') {
-    return { valid: false, error: 'Field "kaynak" must be "gercek"' };
+  // 10. decision_time_sec (number >= 0, <= 600)
+  if (
+    typeof obj.decision_time_sec !== 'number' ||
+    !Number.isFinite(obj.decision_time_sec) ||
+    (obj.decision_time_sec as number) < 0 ||
+    (obj.decision_time_sec as number) > 600
+  ) {
+    return {
+      valid: false,
+      error: 'Field "decision_time_sec" must be a finite number between 0 and 600',
+    };
+  }
+
+  // 11. chose_risky (0 or 1)
+  if (
+    !Number.isInteger(obj.chose_risky) ||
+    ((obj.chose_risky as number) !== 0 && (obj.chose_risky as number) !== 1)
+  ) {
+    return { valid: false, error: 'Field "chose_risky" must be 0 or 1' };
+  }
+
+  // 12. source ("real" or "synthetic")
+  if (obj.source !== 'real' && obj.source !== 'synthetic') {
+    return { valid: false, error: 'Field "source" must be "real" or "synthetic"' };
   }
 
   return {
     valid: true,
     row: {
-      oturum: obj.oturum as string,
-      sahne_no: obj.sahne_no as number,
-      seviye: obj.seviye as number,
-      hedef: obj.hedef as number,
-      onceki_ipucu_sayisi: obj.onceki_ipucu_sayisi as number,
-      onceki_riskli_sayisi: obj.onceki_riskli_sayisi as number,
-      onceki_timeout_sayisi: obj.onceki_timeout_sayisi as number,
-      onceki_karar_suresi_sn: obj.onceki_karar_suresi_sn as number,
-      ipucu_bu_sahne: obj.ipucu_bu_sahne as number,
-      karar_suresi_sn: obj.karar_suresi_sn as number,
-      secim_riskli: obj.secim_riskli as number,
-      kaynak: 'gercek',
+      session_id: obj.session_id as string,
+      scene_no: obj.scene_no as number,
+      level: obj.level as number,
+      goal: obj.goal as number,
+      prev_hints_used: obj.prev_hints_used as number,
+      prev_risky_count: obj.prev_risky_count as number,
+      prev_timeout_count: obj.prev_timeout_count as number,
+      prev_decision_time_sec: obj.prev_decision_time_sec as number,
+      hint_used_this_scene: obj.hint_used_this_scene as number,
+      decision_time_sec: obj.decision_time_sec as number,
+      chose_risky: obj.chose_risky as number,
+      source: obj.source as 'real' | 'synthetic',
     },
   };
 }
