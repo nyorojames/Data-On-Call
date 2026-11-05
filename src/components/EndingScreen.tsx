@@ -201,6 +201,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
         </button>
         <button
           type="button"
+          data-testid="change-answers"
           onClick={onChangeAnswers}
           className="w-full h-12 bg-[#162032] hover:bg-[#1E293B] text-[#DDE2F5] border border-[#334155] font-semibold rounded text-sm transition-all cursor-pointer active:scale-[0.99]"
         >

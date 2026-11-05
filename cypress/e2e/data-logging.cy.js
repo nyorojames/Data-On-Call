@@ -126,4 +126,119 @@ describe('Data Logging & Telemetry', () => {
       .should('be.visible')
       .and('contain', 'Download my session data (CSV)');
   });
+
+  it('generates a fresh session_id and resets prev_* to zero on every restart path', () => {
+    let capturedSessionIds = [];
+
+    cy.intercept('POST', '/api/log', (req) => {
+      req.reply({
+        statusCode: 204,
+        headers: { 'x-data-collection': 'false' },
+      });
+    }).as('logRecord');
+
+    // Run 1: Beginner all-good playthrough to get "Try Experienced mode" recommendation
+    cy.visit('/');
+    cy.contains('button', 'Beginner').click();
+    cy.contains('button', 'Internship prep').click();
+    cy.get('[data-testid="start-shift"]').click();
+
+    // D1
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord').then((int) => {
+      capturedSessionIds.push(int.request.body.session_id);
+      expect(int.request.body.scene_no).to.eq(1);
+      expect(int.request.body.prev_risky_count).to.eq(0);
+      expect(int.request.body.prev_decision_time_sec).to.eq(0);
+    });
+    cy.get('[data-testid="next-decision"]').click();
+
+    // D2
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+
+    // D3
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+
+    // Restart Path 1: "Try Experienced mode" ([data-testid="level-change"])
+    cy.get('[data-testid="ending-title"]').should('be.visible');
+    cy.get('[data-testid="level-change"]').should('be.visible').click();
+
+    // Next D1 must have a NEW session_id and all prev_* equal 0
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord').then((int) => {
+      const body = int.request.body;
+      expect(body.session_id).to.not.eq(capturedSessionIds[0]);
+      capturedSessionIds.push(body.session_id);
+      expect(body.scene_no).to.eq(1);
+      expect(body.level).to.eq(1); // Switched to Experienced
+      expect(body.prev_hints_used).to.eq(0);
+      expect(body.prev_risky_count).to.eq(0);
+      expect(body.prev_timeout_count).to.eq(0);
+      expect(body.prev_decision_time_sec).to.eq(0);
+    });
+    cy.get('[data-testid="next-decision"]').click();
+
+    // Finish D2 and D3
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+
+    // Restart Path 2: "Change my answers" ([data-testid="change-answers"])
+    cy.get('[data-testid="ending-title"]').should('be.visible');
+    cy.get('[data-testid="change-answers"]').should('be.visible').click();
+
+    // Next D1 must have another NEW session_id and all prev_* equal 0
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord').then((int) => {
+      const body = int.request.body;
+      expect(body.session_id).to.not.eq(capturedSessionIds[0]);
+      expect(body.session_id).to.not.eq(capturedSessionIds[1]);
+      capturedSessionIds.push(body.session_id);
+      expect(body.scene_no).to.eq(1);
+      expect(body.prev_hints_used).to.eq(0);
+      expect(body.prev_risky_count).to.eq(0);
+      expect(body.prev_timeout_count).to.eq(0);
+      expect(body.prev_decision_time_sec).to.eq(0);
+    });
+    cy.get('[data-testid="next-decision"]').click();
+
+    // Finish D2 and D3
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord');
+    cy.get('[data-testid="next-decision"]').click();
+
+    // Restart Path 3: "Play again" ([data-testid="play-again"])
+    cy.get('[data-testid="ending-title"]').should('be.visible');
+    cy.get('[data-testid="play-again"]').should('be.visible').click();
+
+    // Return to intake screen
+    cy.contains('h1', 'Start your shift').should('be.visible');
+    cy.contains('button', 'Beginner').click();
+    cy.contains('button', 'Use AI effectively').click();
+    cy.get('[data-testid="start-shift"]').click();
+
+    // Next D1 must have yet another NEW session_id and all prev_* equal 0
+    cy.get('[data-testid="option-a"]').click();
+    cy.wait('@logRecord').then((int) => {
+      const body = int.request.body;
+      expect(body.session_id).to.not.eq(capturedSessionIds[0]);
+      expect(body.session_id).to.not.eq(capturedSessionIds[1]);
+      expect(body.session_id).to.not.eq(capturedSessionIds[2]);
+      expect(body.scene_no).to.eq(1);
+      expect(body.prev_hints_used).to.eq(0);
+      expect(body.prev_risky_count).to.eq(0);
+      expect(body.prev_timeout_count).to.eq(0);
+      expect(body.prev_decision_time_sec).to.eq(0);
+    });
+  });
 });

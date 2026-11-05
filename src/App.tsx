@@ -41,28 +41,32 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  const resetSessionState = () => {
+    setSessionId(generateSessionId());
+    setChoices({});
+    setTimeouts({});
+    setSessionRows([]);
+    setHintsCount(0);
+    setRiskyCount(0);
+    setTimeoutsCount(0);
+    setLastDecisionTimeSec(0);
+    setDecisionIndex(0);
+  };
+
   // Check for ?autostart=1 support for quick headless checks
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('autostart') === '1') {
       setLevel('Experienced');
       setGoal('Use AI effectively');
-      setDecisionIndex(0);
+      resetSessionState();
       setScreen('scene');
     }
   }, []);
 
   const handleStartShift = () => {
     if (level && goal) {
-      setDecisionIndex(0);
-      setChoices({});
-      setTimeouts({});
-      setSessionId(generateSessionId());
-      setSessionRows([]);
-      setHintsCount(0);
-      setRiskyCount(0);
-      setTimeoutsCount(0);
-      setLastDecisionTimeSec(0);
+      resetSessionState();
       setScreen('scene');
     }
   };
@@ -132,40 +136,18 @@ export default function App() {
   const handlePlayAgain = () => {
     setLevel(null);
     setGoal(null);
-    setChoices({});
-    setTimeouts({});
-    setSessionId(generateSessionId());
-    setSessionRows([]);
-    setHintsCount(0);
-    setRiskyCount(0);
-    setTimeoutsCount(0);
-    setLastDecisionTimeSec(0);
-    setDecisionIndex(0);
+    resetSessionState();
     setScreen('intake');
   };
 
   const handleChangeAnswers = () => {
-    setChoices({});
-    setTimeouts({});
-    setSessionRows([]);
-    setHintsCount(0);
-    setRiskyCount(0);
-    setTimeoutsCount(0);
-    setLastDecisionTimeSec(0);
-    setDecisionIndex(0);
+    resetSessionState();
     setScreen('scene');
   };
 
   const handleLevelChange = (newLevel: PlayerLevel) => {
     setLevel(newLevel);
-    setChoices({});
-    setTimeouts({});
-    setSessionRows([]);
-    setHintsCount(0);
-    setRiskyCount(0);
-    setTimeoutsCount(0);
-    setLastDecisionTimeSec(0);
-    setDecisionIndex(0);
+    resetSessionState();
     setScreen('scene');
   };
 
