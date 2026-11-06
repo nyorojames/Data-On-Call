@@ -311,3 +311,126 @@ def test_tag_participant_and_leave_one_participant_out_cv(tmp_path):
     )
     # Check that CV method is detected as leave-one-participant-out
     assert "Cross-validation method: leave-one-participant-out" in res.stdout
+
+
+def test_parity_script_execution():
+    """Verify tests/parity.py runs successfully on the demo model with exit code 0."""
+    result = subprocess.run(
+        [sys.executable, "tests/parity.py"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, f"parity.py failed:\n{result.stderr}\n{result.stdout}"
+    assert "ALL PARITY CHECKS PASSED" in result.stdout
+
+
+def test_train_demo_refuses_real_data(tmp_path):
+    """scripts/train_demo.py must strictly refuse datasets containing source=real rows."""
+    out_dir = tmp_path / "demo_out"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/train_demo.py",
+            "--data",
+            "data/sessions.csv",
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert "strictly refuses real-data files" in result.stderr
+    assert not out_dir.exists()
+
+
+def test_train_demo_gate_failure_writes_nothing(tmp_path):
+    """scripts/train_demo.py must write no artifacts when synthetic recovery sanity fails."""
+    noise_csv = tmp_path / "noise_dev.csv"
+    out_dir = tmp_path / "noise_demo_out"
+
+    rows = generate_synthetic_data(num_sessions=60, seed=42, noise_only=True)
+    write_csv(rows, noise_csv)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/train_demo.py",
+            "--data",
+            str(noise_csv),
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert "SANITY CHECK FAILURE" in result.stderr
+    assert not (out_dir / "model.onnx").exists()
+    assert not (out_dir / "config.json").exists()
+
+
+def test_train_demo_deterministic_outputs(tmp_path):
+    """scripts/train_demo.py produces byte-identical model and identical metrics across runs."""
+    out_1 = tmp_path / "out_1"
+    out_2 = tmp_path / "out_2"
+
+    res1 = subprocess.run(
+        [sys.executable, "scripts/train_demo.py", "--out-dir", str(out_1)],
+        capture_output=True,
+        text=True,
+    )
+    res2 = subprocess.run(
+        [sys.executable, "scripts/train_demo.py", "--out-dir", str(out_2)],
+        capture_output=True,
+        text=True,
+    )
+    assert res1.returncode == 0
+    assert res2.returncode == 0
+
+    bytes1 = (out_1 / "model.onnx").read_bytes()
+    bytes2 = (out_2 / "model.onnx").read_bytes()
+    assert bytes1 == bytes2
+
+    cfg1 = json.loads((out_1 / "config.json").read_text(encoding="utf-8"))
+    cfg2 = json.loads((out_2 / "config.json").read_text(encoding="utf-8"))
+    assert cfg1["model_sha256"] == cfg2["model_sha256"]
+    assert cfg1["oof_accuracy"] == cfg2["oof_accuracy"]
+    assert cfg1["baseline_accuracy"] == cfg2["baseline_accuracy"]
+    assert cfg1["demo"] is True
+    assert cfg1["validated_on_real_data"] is False
+
+
+def test_real_train_py_fails_gate_and_leaves_model_dir_unchanged():
+    """Verify that running real train.py still fails with exit 1 and leaves model/ untouched."""
+    import hashlib
+
+    model_dir = Path("model")
+    onnx_path = model_dir / "model.onnx"
+    config_path = model_dir / "config.json"
+    readme_path = model_dir / "README.md"
+
+    assert onnx_path.is_file(), "model.onnx must exist before test"
+    assert config_path.is_file(), "config.json must exist before test"
+
+    def get_hash(p: Path) -> str:
+        return hashlib.sha256(p.read_bytes()).hexdigest()
+
+    onnx_hash_before = get_hash(onnx_path)
+    config_hash_before = get_hash(config_path)
+    readme_hash_before = get_hash(readme_path) if readme_path.is_file() else None
+
+    # Run real train.py on real sessions
+    result = subprocess.run(
+        [sys.executable, "train.py"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1, "Real train.py should exit with code 1 due to gate failure"
+    assert "GATE FAILURE" in result.stderr
+
+    # Verify hashes of model files did not change
+    assert get_hash(onnx_path) == onnx_hash_before
+    assert get_hash(config_path) == config_hash_before
+    if readme_hash_before:
+        assert get_hash(readme_path) == readme_hash_before

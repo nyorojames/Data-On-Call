@@ -1,22 +1,77 @@
 [
   {
     "description": "Beginner player starting scene 1 with internship goal",
-    "features": [0, 0, 1, 0, 0, 0, 0.0]
+    "features": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0.0
+    ],
+    "expected_probability": 0.336381,
+    "sklearn_probability": 0.336381,
+    "parity_diff": 2.98e-08
   },
   {
-    "description": "Experienced player starting scene 1 with trend-tracking goal",
-    "features": [1, 1, 1, 0, 0, 0, 0.0]
+    "description": "Cautious beginner in scene 2 who used a hint in scene 1 (low risk)",
+    "features": [
+      0,
+      2,
+      2,
+      1,
+      0,
+      0,
+      15.2
+    ],
+    "expected_probability": 0.166585,
+    "sklearn_probability": 0.166585,
+    "parity_diff": 2.98e-08
   },
   {
-    "description": "Cautious beginner in scene 2 who used a hint in scene 1",
-    "features": [0, 2, 2, 1, 0, 0, 15.2]
+    "description": "Beginner player in scene 3 with 1 prior risky choice and AI goal (near 0.5 threshold)",
+    "features": [
+      0,
+      2,
+      3,
+      0,
+      1,
+      0,
+      28.5
+    ],
+    "expected_probability": 0.499578,
+    "sklearn_probability": 0.499578,
+    "parity_diff": 0.0
   },
   {
-    "description": "Experienced player in scene 2 following a risky choice in scene 1",
-    "features": [1, 0, 2, 0, 1, 0, 28.4]
+    "description": "Experienced player in scene 2 following a risky choice in scene 1 (high risk)",
+    "features": [
+      1,
+      0,
+      2,
+      0,
+      1,
+      0,
+      28.4
+    ],
+    "expected_probability": 0.730616,
+    "sklearn_probability": 0.730616,
+    "parity_diff": 5.96e-08
   },
   {
-    "description": "Experienced player in scene 3 following multiple risky choices and a timeout",
-    "features": [1, 2, 3, 0, 2, 1, 60.0]
+    "description": "Experienced player in scene 3 following multiple risky choices and a timeout (very high risk)",
+    "features": [
+      1,
+      2,
+      3,
+      0,
+      2,
+      1,
+      60.0
+    ],
+    "expected_probability": 0.884876,
+    "sklearn_probability": 0.884876,
+    "parity_diff": 0.0
   }
 ]
