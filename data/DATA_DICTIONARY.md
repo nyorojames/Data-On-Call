@@ -11,6 +11,13 @@ This document defines the schema, field descriptions, allowed values, and distin
 
 ---
 
+## 2. Data Cleaning & Provenance Note
+- **Raw Telemetry Archive:** Unedited raw telemetry collected from playthroughs is preserved in `data/sessions_raw.csv`.
+- **Playthrough Boundary Split:** Three sessions in raw telemetry (`261ba306`, `2555c65d`, and `276e58a6`) contained two consecutive playthroughs under a single `session_id` due to a UI restart path that retained `sessionId` across level switches.
+- **Deterministic Disambiguation:** Using `scripts/split_playthroughs.py`, second playthroughs were mechanically assigned deterministic 32-character hex identifiers derived from `sha256("<original_id>:2")[:32]`. No rows were deleted, and no feature values or target labels were modified. Full provenance is recorded in `docs/DATA_DECISIONS.md`.
+
+---
+
 ## 2. Model Features vs. Analysis Fields
 
 | Category | Columns | Description |

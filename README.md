@@ -14,6 +14,8 @@ Data On-Call is a mobile-first scenario game where the player acts as the on-cal
 | Assignment Specification Name (TR) | Repository English Name | Description / Purpose |
 |---|---|---|
 | `data/oturumlar.csv` | `data/sessions.csv` | Player gameplay telemetry and decision records |
+| — | `data/sessions_raw.csv` | Unedited raw telemetry archive prior to playthrough split |
+| — | `docs/DATA_DECISIONS.md` | Record of label-blind mechanical playthrough split |
 | `data/SOZLUK.md` | `data/DATA_DICTIONARY.md` | Schema specification, data dictionary, and KVKK/data protection notice |
 | `tests/parite.json` | `tests/parity.json` | Benchmark feature vectors for probability parity verification |
 | `tests/parite.py` | `tests/parity.py` | Parity verification script comparing Python and web ONNX predictions |
@@ -116,8 +118,11 @@ DataOnCall/
 ├── data/
 │   ├── DATA_DICTIONARY.md    # Schema specification and KVKK compliance notice
 │   ├── README.md             # Data collection runbook and validation instructions
+│   ├── sessions.csv          # Repaired gameplay sessions (18 distinct sessions)
+│   ├── sessions_raw.csv      # Unedited raw telemetry archive
 │   └── synthetic_dev.csv     # Synthetic gameplay data generated with seed 42
 ├── docs/
+│   ├── DATA_DECISIONS.md     # Audit record of label-blind playthrough disambiguation
 │   └── ai-studio-sync-prompt.md # Copy-paste prompt for Google AI Studio sync
 ├── eval/
 │   ├── messages.md           # 20 student evaluation prompts, rubric, and summary
