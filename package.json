@@ -20,6 +20,7 @@
     "test": "node scripts/run-cypress.js",
     "test:open": "cypress open",
     "demo": "node scripts/run-demo.js",
+    "demo:v2": "node scripts/run-demo-v2.js",
     "eval": "node scripts/run-eval.js",
     "merge-eval": "node scripts/merge-eval.js",
     "summarize-eval": "node scripts/summarize-eval.js"

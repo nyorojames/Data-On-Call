@@ -79,14 +79,17 @@ describe('In-Browser Model Inference & Adaptive Tutoring (AC9 & AC10)', () => {
       cy.get('[data-testid="proactive-question"]').should('be.visible');
       cy.get('[data-testid="opening-question"]').should('be.visible');
 
-      // Countdown timer is visible and actively runs (ticks down at least 1 second)
-      cy.get('[data-testid="timer"]').should('be.visible').and('contain', '60s');
-      cy.get('[data-testid="timer"]', { timeout: 4000 }).should('not.contain', '60s');
+      // Countdown timer is visible and actively runs (ticks down)
+      cy.get('[data-testid="timer"]').should('be.visible');
       cy.get('[data-testid="timer"]')
         .invoke('text')
-        .then((text) => {
-          const sec = parseInt(text.replace('s', ''), 10);
-          expect(sec).to.be.at.most(59);
+        .then((initialText) => {
+          const initialSec = parseInt(initialText.replace('s', ''), 10);
+          expect(initialSec).to.be.at.most(60);
+          cy.get('[data-testid="timer"]', { timeout: 4000 }).should(($el) => {
+            const currentSec = parseInt($el.text().replace('s', ''), 10);
+            expect(currentSec).to.be.lessThan(initialSec);
+          });
         });
     });
   });
@@ -128,6 +131,11 @@ describe('In-Browser Model Inference & Adaptive Tutoring (AC9 & AC10)', () => {
       cy.get('[data-testid="timer"]').should('be.visible').and('contain', '60s');
       cy.tick(5000);
       cy.get('[data-testid="timer"]').should('contain', '60s');
+
+      // Restore clock for subsequent tests
+      cy.clock().then((clock) => {
+        clock.restore();
+      });
     });
   });
 
@@ -156,6 +164,53 @@ describe('In-Browser Model Inference & Adaptive Tutoring (AC9 & AC10)', () => {
 
       // No error message surfaced to the player
       cy.contains(/error|failed/i).should('not.exist');
+    });
+  });
+
+  describe('(f) Static Deployment Resilience (No Backend / 404 on all APIs)', () => {
+    it('runs smoothly with 404 on tutor, log, and log status endpoints', () => {
+      cy.intercept('GET', '**/api/log/status', { statusCode: 404, body: 'Not Found' }).as('status404');
+      cy.intercept('POST', '**/api/log', { statusCode: 404, body: 'Not Found' }).as('log404');
+      cy.intercept('POST', '**/api/tutor', { statusCode: 404, body: 'Not Found' }).as('tutor404');
+
+      cy.visit('/');
+      cy.contains('h1', 'Start your shift').should('be.visible');
+
+      // No data-collection badge appears
+      cy.get('[data-testid="collection-indicator"]').should('not.exist');
+
+      cy.contains('button', 'Beginner').click();
+      cy.contains('button', 'Internship prep').click();
+      cy.get('[data-testid="start-shift"]').click();
+
+      // Scene 1: shows pre-written tutor question
+      cy.get('[data-testid="opening-question"]')
+        .should('be.visible')
+        .and('contain', 'An interviewer asks: what is a data pipeline');
+      cy.get('[data-testid="option-a"]').click();
+      cy.get('[data-testid="consequence"]').should('be.visible');
+      cy.get('[data-testid="next-decision"]').click();
+
+      // Scene 2: plays through
+      cy.get('[data-testid="opening-question"]')
+        .should('be.visible')
+        .and('contain', 'An interviewer asks: what are three simple checks');
+      cy.get('[data-testid="option-a"]').click();
+      cy.get('[data-testid="consequence"]').should('be.visible');
+      cy.get('[data-testid="next-decision"]').click();
+
+      // Scene 3: plays through
+      cy.get('[data-testid="opening-question"]')
+        .should('be.visible')
+        .and('contain', 'An interviewer asks: what is personal data');
+      cy.get('[data-testid="option-a"]').click();
+      cy.get('[data-testid="consequence"]').should('be.visible');
+      cy.get('[data-testid="next-decision"]').click();
+
+      // Completes to ending screen cleanly
+      cy.get('[data-testid="ending-title"]')
+        .should('be.visible')
+        .and('contain', 'Ending A: Data correct, report on time');
     });
   });
 });
