@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { PlayerLevel, PlayerGoal, DecisionChoice, evaluateEnding } from './game/rules.ts';
 import { TelemetryRow, buildTelemetryRow, generateSessionId } from './game/telemetry.ts';
+import { predictRisk } from './game/model.ts';
 import { IntakeScreen } from './components/IntakeScreen.tsx';
 import { SceneScreen } from './components/SceneScreen.tsx';
 import { EndingScreen } from './components/EndingScreen.tsx';
@@ -28,6 +29,25 @@ export default function App() {
   const [timeoutsCount, setTimeoutsCount] = useState(0);
   const [lastDecisionTimeSec, setLastDecisionTimeSec] = useState(0);
   const [isCollectionMode, setIsCollectionMode] = useState(false);
+
+  // Parity testing mode (AC10): /?parity=1&x=0,0,1,0,0,0,0.0
+  const [parityProb, setParityProb] = useState<number | null>(null);
+  const isParityMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('parity') === '1';
+
+  useEffect(() => {
+    if (isParityMode) {
+      const params = new URLSearchParams(window.location.search);
+      const xParam = params.get('x');
+      if (xParam) {
+        const feats = xParam.split(',').map((val) => Number(val.trim()));
+        if (feats.length === 7 && feats.every((num) => !isNaN(num))) {
+          predictRisk(feats).then((prob) => {
+            setParityProb(prob);
+          });
+        }
+      }
+    }
+  }, [isParityMode]);
 
   // Check collection mode status on mount
   useEffect(() => {
@@ -151,6 +171,22 @@ export default function App() {
     setScreen('scene');
   };
 
+  if (isParityMode) {
+    return (
+      <main className="min-h-screen bg-[#0B111E] text-[#DDE2F5] flex flex-col justify-center items-center p-4">
+        {parityProb !== null && (
+          <div
+            data-cy="p"
+            data-value={parityProb.toFixed(6)}
+            className="font-mono text-sm text-[#94A3B8]"
+          >
+            Adaptive tutor (demo model, synthetic data): risk {parityProb.toFixed(2)}
+          </div>
+        )}
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#0B111E] text-[#DDE2F5] flex flex-col justify-center items-center relative">
       {isCollectionMode && (
@@ -178,6 +214,10 @@ export default function App() {
           decisionIndex={decisionIndex}
           level={level}
           goal={goal}
+          prevHintsCount={hintsCount}
+          prevRiskyCount={riskyCount}
+          prevTimeoutsCount={timeoutsCount}
+          prevDecisionTimeSec={lastDecisionTimeSec}
           onDecisionMade={handleDecisionMade}
           onNextDecision={handleNextDecision}
         />

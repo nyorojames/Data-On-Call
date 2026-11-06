@@ -10,6 +10,8 @@ import {
   mapGoalToCode,
   TelemetryRow,
 } from './telemetry.ts';
+import { buildSceneFeatures } from './model.ts';
+import { PROACTIVE_CUTOFF, TIMER_RELIEF_CUTOFF } from './adaptation.ts';
 
 test('generateSessionId generates valid 32-character hex token', () => {
   const id1 = generateSessionId();
@@ -247,4 +249,47 @@ test('validateTelemetryPayload rejects invalid payloads with descriptive errors'
     validateTelemetryPayload({ ...base, source: 'invalid_source' }).valid,
     false
   );
+});
+
+test('adaptation cutoffs adhere to pre-registered constants', () => {
+  assert.equal(PROACTIVE_CUTOFF, 0.5);
+  assert.equal(TIMER_RELIEF_CUTOFF, 0.75);
+});
+
+test('buildSceneFeatures correctly maps inputs to 7 ordered features', () => {
+  // Beginner, Internship prep, Scene 1
+  const f1 = buildSceneFeatures({
+    level: 'Beginner',
+    goal: 'Internship prep',
+    sceneNo: 1,
+    prevHintsUsed: 0,
+    prevRiskyCount: 0,
+    prevTimeoutCount: 0,
+    prevDecisionTimeSec: 0.0,
+  });
+  assert.deepEqual(f1, [0, 0, 1, 0, 0, 0, 0.0]);
+
+  // Experienced, Use AI effectively, Scene 2
+  const f2 = buildSceneFeatures({
+    level: 'Experienced',
+    goal: 'Use AI effectively',
+    sceneNo: 2,
+    prevHintsUsed: 1,
+    prevRiskyCount: 1,
+    prevTimeoutCount: 0,
+    prevDecisionTimeSec: 28.423,
+  });
+  assert.deepEqual(f2, [1, 2, 2, 1, 1, 0, 28.42]);
+
+  // Support numeric inputs directly
+  const f3 = buildSceneFeatures({
+    level: 1,
+    goal: 1,
+    sceneNo: 3,
+    prevHintsUsed: 0,
+    prevRiskyCount: 2,
+    prevTimeoutCount: 1,
+    prevDecisionTimeSec: 60.0,
+  });
+  assert.deepEqual(f3, [1, 1, 3, 0, 2, 1, 60.0]);
 });
