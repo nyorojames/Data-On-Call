@@ -210,6 +210,12 @@ function getLocalIpAddress(): string | null {
 }
 
 async function startServer() {
+  const modelDir = path.resolve(__dirname, 'model');
+  app.use('/model', express.static(modelDir));
+
+  const ortDir = path.resolve(__dirname, 'public/ort');
+  app.use('/ort', express.static(ortDir));
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
