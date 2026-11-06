@@ -68,11 +68,12 @@ def generate_synthetic_data(
                 chose_risky = 1 if rng.random() < 0.5 else 0
             else:
                 # Documented rule:
-                # Risk rises with Experienced level (+1.2), prev_risky_count (+0.9),
-                # prev_timeout_count (+1.1), falls with prev_hints_used (-1.2).
+                # Base log-odds intercept: -0.85 (targets ~45% risky rate across the population).
+                # Risk rises with Experienced level (+1.3), prev_risky_count (+0.9),
+                # prev_timeout_count (+1.1), falls with prev_hints_used (-1.3).
                 noise = rng.gauss(0.0, 0.45)
                 log_odds = (
-                    -0.5
+                    -0.85
                     + 1.3 * level
                     + 0.9 * f_prev_risky
                     + 1.1 * f_prev_timeouts
