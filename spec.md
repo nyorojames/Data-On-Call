@@ -151,3 +151,58 @@ See the README's Product Decisions section.
 - TechTrends Kenya (2026-03-17): swap networks use station and battery data to redirect riders and monitor battery health. https://techtrendske.co.ke/2026/03/17/bolt-electric-motorbike-strategy-kenya
 - Serrari Group: Zeno's cloud operating system with real-time visibility into battery state, rider behaviour and station performance. https://serrarigroup.com/?p=34733
 - Imperial College London, ChargeUp! Data Swap: scarcity of e-motorcycle usage data in African cities. https://www.imperial.ac.uk/energy-futures-lab/research/chargeup/
+
+## 10. v2: Learned adaptation
+
+### 10.1 Model Requirement
+A small tabular classification model (logistic regression or small decision tree, trained with scikit-learn and exported to ONNX format) that runs client-side to predict, at the **START** of a scene before any user interaction, whether the player will choose the risky option in that scene.
+
+### 10.2 Features & Label
+All features are strictly known at scene start. Nothing from the current scene is used as an input feature (zero target/scene leakage).
+
+- **Input Features (7 total):**
+  - `level`: Player experience level (`0` = Beginner, `1` = Experienced).
+  - `goal`: Player learning goal (`0` = Internship prep, `1` = Keep up with trends, `2` = Use AI effectively).
+  - `scene_no`: Current scene number (`1`, `2`, or `3`).
+  - `prev_hints_used`: Total count of hints requested in earlier scenes (`0` in scene 1).
+  - `prev_risky_count`: Total count of risky choices made in earlier scenes (`0` in scene 1).
+  - `prev_timeout_count`: Total count of timeouts in earlier scenes (`0` in scene 1).
+  - `prev_decision_time_sec`: Decision duration in seconds from the immediately preceding scene (`0` in scene 1).
+
+- **Target Label:**
+  - `chose_risky`: Binary label (`1` if the player's choice in this scene was risky or resulted in a timeout, `0` if good choice).
+
+### 10.3 Metric & Threshold Gate
+Fixed strictly prior to training:
+- The evaluation metric is accuracy under leave-one-session-out (or grouped-by-person) cross-validation on real gameplay sessions.
+- **Threshold Gate:** Accuracy must be at least **0.60** AND strictly higher than the majority-class baseline.
+- If the model fails to meet both criteria, the training gate fails and `model.onnx` is not published.
+
+### 10.4 Runtime Behavior Change (Amended 2026-11-06)
+> *Note (2026-11-06, written before implementation):* The adaptation is driven by a synthetic DEMO model and must be clearly labeled as such in the UI.
+- At the start of each scene, the in-browser model computes predicted risk $p = P(\text{chose\_risky} = 1)$.
+- **Proactive Question ($p \ge 0.5$):** If $p \ge 0.5$ (`PROACTIVE_CUTOFF`), the AI tutor proactively displays a guiding question before the player makes their selection (using the decision's existing hint question).
+- **Timer Relief ($p \ge 0.75$):** If $p \ge 0.75$ (`TIMER_RELIEF_CUTOFF`) and the player is in Experienced mode, the countdown timer is paused to allow reflection under elevated risk. For $0.5 \le p < 0.75$, the proactive question is shown while the timer continues running.
+- **Unchanged Baseline ($p < 0.5$):** If $p < 0.5$, no adaptive change occurs (standard v1 behavior).
+- **Graceful Fallback:** If model loading or inference fails for any reason, the game operates under standard v1 behavior without surfacing errors.
+
+### 10.5 Acceptance Examples
+
+**AC8: The training gate protects production**
+- Given real session data in `data/sessions.csv`
+- When `train.py` executes cross-validation and accuracy is below 0.60 or does not exceed the majority-class baseline
+- Then `train.py` exits with a non-zero error code and writes no `model.onnx` artifact.
+
+**AC9: Proactive adaptation on elevated risk (Amended 2026-11-06)**
+- Given an active playthrough at the start of a scene
+- When the runtime model evaluates the scene start features and predicts risk $p$:
+  - If $p \ge 0.5$: the tutor surfaces a proactive guiding question in a dedicated element (`data-testid="proactive-question"`) before a choice is made;
+  - If $p \ge 0.75$ and the level is Experienced: the countdown timer is paused;
+  - If $p < 0.5$: behavior remains unchanged from v1;
+  - The UI displays an adaptive tutor status line explicitly identifying the prediction as driven by a synthetic demo model.
+
+**AC10: Model inference parity**
+- Given the 5 benchmark feature vectors defined in `tests/parity.json`
+- When probability predictions are calculated in the web application and in Python scikit-learn
+- Then the predicted probabilities differ by less than $1 \times 10^{-4}$ for every benchmark vector.
+

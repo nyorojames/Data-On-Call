@@ -9,12 +9,24 @@ import {
   getTutorQuestionForDecision,
 } from '../game/rules.ts';
 import { BottomSheet } from './BottomSheet.tsx';
+import { predictRisk, buildSceneFeatures } from '../game/model.ts';
+import { PROACTIVE_CUTOFF, TIMER_RELIEF_CUTOFF } from '../game/adaptation.ts';
 
 interface SceneScreenProps {
   decisionIndex: number; // 0, 1, 2 (corresponding to Decision 1, 2, 3)
   level: PlayerLevel;
   goal: PlayerGoal;
-  onDecisionMade: (decisionId: number, choice: DecisionChoice, timedOut?: boolean) => void;
+  prevHintsCount?: number;
+  prevRiskyCount?: number;
+  prevTimeoutsCount?: number;
+  prevDecisionTimeSec?: number;
+  onDecisionMade: (
+    decisionId: number,
+    choice: DecisionChoice,
+    timedOut?: boolean,
+    decisionTimeSec?: number,
+    hintViewed?: boolean
+  ) => void;
   onNextDecision: () => void;
 }
 
@@ -22,6 +34,10 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
   decisionIndex,
   level,
   goal,
+  prevHintsCount = 0,
+  prevRiskyCount = 0,
+  prevTimeoutsCount = 0,
+  prevDecisionTimeSec = 0,
   onDecisionMade,
   onNextDecision,
 }) => {
@@ -37,6 +53,44 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
 
   // Hint state (Beginner mode)
   const [showHint, setShowHint] = useState(false);
+  const hintViewedRef = useRef<boolean>(false);
+
+  // Decision timing state
+  const sceneStartTimeRef = useRef<number>(Date.now());
+
+  // Model-driven risk probability & adaptive tutoring state (AC9)
+  const [riskProb, setRiskProb] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const features = buildSceneFeatures({
+      level,
+      goal,
+      sceneNo: decisionNumber,
+      prevHintsUsed: prevHintsCount,
+      prevRiskyCount: prevRiskyCount,
+      prevTimeoutCount: prevTimeoutsCount,
+      prevDecisionTimeSec: prevDecisionTimeSec,
+    });
+
+    predictRisk(features).then((prob) => {
+      if (!isCancelled) {
+        setRiskProb(prob);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    decisionNumber,
+    level,
+    goal,
+    prevHintsCount,
+    prevRiskyCount,
+    prevTimeoutsCount,
+    prevDecisionTimeSec,
+  ]);
 
   // Timer state (Experienced mode)
   const [timeLeft, setTimeLeft] = useState(60);
@@ -58,6 +112,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setShowBottomSheet(false);
     setConsequenceText('');
     setShowHint(false);
+    hintViewedRef.current = false;
+    sceneStartTimeRef.current = Date.now();
     setTimeLeft(60);
     setTutorReply(getTutorQuestionForDecision(currentDecision.id, goal, level));
     setUserInput('');
@@ -75,12 +131,17 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setIsTimedOut(true);
     setConsequenceText(riskyOption.result);
     setShowBottomSheet(true);
-    onDecisionMade(currentDecision.id, riskyOption.id, true);
+    const elapsedSec = Math.max(0, (Date.now() - sceneStartTimeRef.current) / 1000);
+    onDecisionMade(currentDecision.id, riskyOption.id, true, elapsedSec, hintViewedRef.current);
   };
 
   // Countdown timer for Experienced players
   useEffect(() => {
-    if (level !== 'Experienced' || showBottomSheet) {
+    if (
+      level !== 'Experienced' ||
+      showBottomSheet ||
+      (riskProb !== null && riskProb >= TIMER_RELIEF_CUTOFF)
+    ) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -97,7 +158,7 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [level, showBottomSheet, timeLeft]);
+  }, [level, showBottomSheet, timeLeft, riskProb]);
 
   const handleSelectOption = (optionId: DecisionChoice) => {
     if (showBottomSheet) return;
@@ -109,7 +170,8 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
     setSelectedChoice(optionId);
     setConsequenceText(option.result);
     setShowBottomSheet(true);
-    onDecisionMade(currentDecision.id, optionId, false);
+    const elapsedSec = Math.max(0, (Date.now() - sceneStartTimeRef.current) / 1000);
+    onDecisionMade(currentDecision.id, optionId, false, elapsedSec, hintViewedRef.current);
 
     // Goal = Use AI effectively: if Option C chosen in Decision 2, tutor asks follow-up
     if (currentDecision.id === 2 && goal === 'Use AI effectively' && optionId === 'C') {
@@ -229,7 +291,10 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
               <button
                 type="button"
                 data-testid="hint"
-                onClick={() => setShowHint(!showHint)}
+                onClick={() => {
+                  setShowHint(!showHint);
+                  hintViewedRef.current = true;
+                }}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded bg-[#1E293B] hover:bg-[#2A354A] text-[#F59E0B] border border-[#334155] transition-colors cursor-pointer"
               >
                 {showHint ? 'Hide hint' : 'Hint'}
@@ -302,6 +367,16 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
           </span>
         </div>
 
+        {riskProb !== null && riskProb >= PROACTIVE_CUTOFF && (
+          <div
+            data-testid="proactive-question"
+            className="p-2.5 bg-[#1E293B] border border-[#F59E0B]/50 rounded text-xs text-[#FFC174] leading-relaxed"
+          >
+            <span className="font-semibold block mb-0.5 text-[#F59E0B]">Proactive Coach:</span>
+            {currentDecision.hintQuestion}
+          </div>
+        )}
+
         <div
           data-testid="tutor-reply"
           className="text-xs leading-relaxed text-[#DDE2F5] bg-[#0F172A] p-2.5 rounded border border-[#1E293B]"
@@ -347,6 +422,17 @@ export const SceneScreen: React.FC<SceneScreenProps> = ({
           </button>
         </form>
       </div>
+
+      {/* Status line for AC9 model inference */}
+      {riskProb !== null && (
+        <div
+          data-cy="p"
+          data-value={riskProb.toFixed(6)}
+          className="my-1 text-center font-mono text-[11px] text-[#94A3B8]"
+        >
+          Adaptive tutor (demo model, synthetic data): risk {riskProb.toFixed(2)}
+        </div>
+      )}
 
       {/* 6. Consequence Bottom Sheet */}
       <BottomSheet

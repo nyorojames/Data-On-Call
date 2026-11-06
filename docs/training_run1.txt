@@ -1,0 +1,14 @@
+Date & Time: 2026-11-06T09:56:28+03:00 | Git Commit: 724930932939617b3ffb5ef96baea6a36734b628 | data/sessions.csv SHA-256: daa32bb472720189831ea79de02eed01894ad4a06b3c2bbc3eaa01fb16d589c2 | data/participants.csv SHA-256: 6f8cf4a395a12e968a3bb7eaf0e3211775707faf4a06179651493497011b0d68
+
+--- Starting Data On-Call v2 Model Training ---
+Data source: data\sessions.csv
+Dev mode:    False
+Loaded 54 rows (18 distinct sessions).
+Cross-validation method: leave-one-participant-out (3 groups).
+Out-of-fold Accuracy: 0.4444
+Baseline Accuracy:    0.5741
+Threshold Gate:       0.60
+
+GATE FAILURE (spec.md §10.3 / AC8):
+Model accuracy (0.4444) failed to exceed the 0.60 threshold or the majority baseline (0.5741).
+Model artifact not published.

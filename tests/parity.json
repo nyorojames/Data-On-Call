@@ -1,0 +1,77 @@
+[
+  {
+    "description": "Beginner player starting scene 1 with internship goal",
+    "features": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0.0
+    ],
+    "expected_probability": 0.319364,
+    "sklearn_probability": 0.319364,
+    "parity_diff": 2.98e-08
+  },
+  {
+    "description": "Cautious beginner in scene 2 who used a hint in scene 1 (low risk)",
+    "features": [
+      0,
+      2,
+      2,
+      1,
+      0,
+      0,
+      15.2
+    ],
+    "expected_probability": 0.058888,
+    "sklearn_probability": 0.058888,
+    "parity_diff": 7.5e-09
+  },
+  {
+    "description": "Experienced player starting scene 1 with internship goal (moderate risk: 0.4-0.6, not near 0.5)",
+    "features": [
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0.0
+    ],
+    "expected_probability": 0.563812,
+    "sklearn_probability": 0.563812,
+    "parity_diff": 0.0
+  },
+  {
+    "description": "Experienced player in scene 2 following a risky choice in scene 1 (high risk)",
+    "features": [
+      1,
+      0,
+      2,
+      0,
+      1,
+      0,
+      28.4
+    ],
+    "expected_probability": 0.769459,
+    "sklearn_probability": 0.769459,
+    "parity_diff": 0.0
+  },
+  {
+    "description": "Experienced player in scene 3 following multiple risky choices and a timeout (very high risk)",
+    "features": [
+      1,
+      2,
+      3,
+      0,
+      2,
+      1,
+      60.0
+    ],
+    "expected_probability": 0.824737,
+    "sklearn_probability": 0.824737,
+    "parity_diff": 5.96e-08
+  }
+]

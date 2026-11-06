@@ -1,9 +1,11 @@
 import React from 'react';
 import { EndingEvaluation, PlayerLevel } from '../game/rules.ts';
-import { CheckCircle2, AlertTriangle, ShieldCheck, Database, Layers } from 'lucide-react';
+import { TelemetryRow, formatCsvFile } from '../game/telemetry.ts';
+import { CheckCircle2, AlertTriangle, ShieldCheck, Database, Layers, Download } from 'lucide-react';
 
 interface EndingScreenProps {
   evaluation: EndingEvaluation;
+  sessionRows?: TelemetryRow[];
   onPlayAgain: () => void;
   onChangeAnswers: () => void;
   onLevelChange?: (newLevel: PlayerLevel) => void;
@@ -11,12 +13,26 @@ interface EndingScreenProps {
 
 export const EndingScreen: React.FC<EndingScreenProps> = ({
   evaluation,
+  sessionRows = [],
   onPlayAgain,
   onChangeAnswers,
   onLevelChange,
 }) => {
   const { endingTitle, causeMessage, results, isAllGood, weakestSkill, nextStep, levelChange } =
     evaluation;
+
+  const handleDownloadSession = () => {
+    const csvContent = formatCsvFile(sessionRows);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `session-${sessionRows[0]?.session_id || 'data'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-8 flex flex-col min-h-screen justify-between">
@@ -151,6 +167,16 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
 
       {/* 5. Action buttons */}
       <div className="space-y-3 pb-6">
+        <button
+          type="button"
+          data-testid="download-session"
+          onClick={handleDownloadSession}
+          className="w-full h-12 bg-[#162032] hover:bg-[#1E293B] text-[#DDE2F5] border border-[#334155] font-semibold rounded text-sm transition-all cursor-pointer active:scale-[0.99] flex items-center justify-center space-x-2"
+        >
+          <Download className="w-4 h-4 text-[#F59E0B]" />
+          <span>Download my session data (CSV)</span>
+        </button>
+
         {levelChange && onLevelChange && (
           <button
             type="button"
@@ -175,6 +201,7 @@ export const EndingScreen: React.FC<EndingScreenProps> = ({
         </button>
         <button
           type="button"
+          data-testid="change-answers"
           onClick={onChangeAnswers}
           className="w-full h-12 bg-[#162032] hover:bg-[#1E293B] text-[#DDE2F5] border border-[#334155] font-semibold rounded text-sm transition-all cursor-pointer active:scale-[0.99]"
         >

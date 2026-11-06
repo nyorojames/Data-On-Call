@@ -1,4 +1,5 @@
 node_modules/
+.venv/
 build/
 dist/
 coverage/
@@ -6,5 +7,11 @@ coverage/
 *.log
 .env*
 !.env.example
+!.env.production
 cypress/videos/
 cypress/screenshots/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/synthetic_noise.csv
+public/ort/
