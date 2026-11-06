@@ -14,7 +14,9 @@ import { mapLevelToCode, mapGoalToCode } from './telemetry.ts';
 
 // Configure local WASM assets (never load from external CDN)
 if (typeof ort !== 'undefined' && ort?.env?.wasm) {
-  ort.env.wasm.wasmPaths = '/ort/';
+  const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+  const wasmBase = base.endsWith('/') ? base : `${base}/`;
+  ort.env.wasm.wasmPaths = `${wasmBase}ort/`;
   ort.env.wasm.numThreads = 1;
 }
 
@@ -29,6 +31,18 @@ export interface ModelConfig {
 let cachedSessionPromise: Promise<ort.InferenceSession | null> | null = null;
 let cachedConfigPromise: Promise<ModelConfig | null> | null = null;
 let inferenceQueue = Promise.resolve();
+
+/**
+ * Checks whether client-side model adaptation is enabled (VITE_MODEL_ENABLED).
+ * Defaults to true. If set to 'false' or '0', returns false, operating as a clean rollback switch.
+ */
+export function isModelEnabled(): boolean {
+  const envVal = (import.meta.env.VITE_MODEL_ENABLED as string | undefined)?.trim();
+  if (envVal === 'false' || envVal === '0') {
+    return false;
+  }
+  return true;
+}
 
 export function getModelBaseUrl(): string {
   const envUrl = (import.meta.env.VITE_MODEL_BASE_URL as string | undefined)?.trim();
@@ -84,7 +98,7 @@ export async function getInferenceSession(): Promise<ort.InferenceSession | null
  * Returns null if model loading or inference fails for any reason (v1 fallback).
  */
 export async function predictRisk(features: number[]): Promise<number | null> {
-  if (!features || features.length !== 7) {
+  if (!isModelEnabled() || !features || features.length !== 7) {
     return null;
   }
 

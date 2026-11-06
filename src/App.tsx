@@ -52,7 +52,7 @@ export default function App() {
   // Check collection mode status on mount
   useEffect(() => {
     fetch('/api/log/status')
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.collection_mode) {
           setIsCollectionMode(true);
