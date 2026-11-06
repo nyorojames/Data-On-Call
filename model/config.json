@@ -1,0 +1,43 @@
+{
+  "features": [
+    "level",
+    "goal",
+    "scene_no",
+    "prev_hints_used",
+    "prev_risky_count",
+    "prev_timeout_count",
+    "prev_decision_time_sec"
+  ],
+  "target": "chose_risky",
+  "model_type": "LogisticRegression",
+  "cv_method": "leave-one-session-out",
+  "num_sessions": 100,
+  "num_rows": 300,
+  "num_participants": null,
+  "oof_accuracy": 0.68,
+  "baseline_accuracy": 0.3033,
+  "gate_threshold": 0.6,
+  "decision_cutoff": 0.5,
+  "model_sha256": "21016d929fc95bbf6846185d2830947d1883384ab6cc0981cb5ce58c661ae34d",
+  "created_at": "2026-11-06T07:18:31.513662+00:00",
+  "demo": true,
+  "training_source": "synthetic",
+  "synthetic_generator": {
+    "script": "scripts/make_synthetic.py",
+    "seed": 42,
+    "rule": "Risk probability rises with Experienced level (+1.3 log-odds), previous risky choices (+0.9 log-odds), and previous timeouts (+1.1 log-odds), and falls with prior hints requested (-1.3 log-odds), subject to Gaussian noise (mean 0.0, std 0.45)."
+  },
+  "validated_on_real_data": false,
+  "real_data_gate": {
+    "result": "FAIL",
+    "accuracy": 0.4444,
+    "majority_baseline": 0.5741,
+    "roc_auc": 0.4215,
+    "cv_method": "leave-one-participant-out",
+    "n_rows": 54,
+    "n_sessions": 18,
+    "n_participants": 3,
+    "record": "docs/training_run1.txt"
+  },
+  "version": "v2.0-demo"
+}
