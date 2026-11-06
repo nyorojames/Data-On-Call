@@ -6,8 +6,8 @@ Data On-Call is a mobile-first scenario game where the player acts as the on-cal
 
 ## Links
 
-- **Live Application:** [TODO live app URL]
-- **Demo Walkthrough Video:** [TODO demo video URL]
+- **Live Application:** https://nyorojames.github.io/Data-On-Call
+- **Demo Walkthrough Video:** https://youtu.be/DYBlrrvg7CI
 - **Hugging Face Model Repository:** https://huggingface.co/Nyoro012/data-on-call-demo-model
 - **Commit-Pinned Hugging Face Model URL:** https://huggingface.co/Nyoro012/data-on-call-demo-model/resolve/59593ba0b88e0bc087ff8f66f3899120e7c35cec/
 - **AI Studio Applet Link:** https://ai.studio/apps/5e740619-2393-4262-bc39-799452da29b0
