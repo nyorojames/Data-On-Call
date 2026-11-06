@@ -243,14 +243,18 @@ When the Gemini API free-tier quota resets, run the following steps to collect t
 
 ## AI Tools Used
 
-The following table records AI assistant tooling utilized across project development phases:
+The following records AI assistant tooling and human oversight across project development phases:
 
 - **Tool:** Antigravity (Google DeepMind)
-  - **Step:** [AUTHOR TO CONFIRM]
-  - **What it did:** [AUTHOR TO CONFIRM]
-  - **What I corrected by hand:** [AUTHOR TO CONFIRM]
-- **Tool:** Gemini 3.5 Flash / Google AI Studio
-  - **Step:** [AUTHOR TO CONFIRM]
-  - **What it did:** [AUTHOR TO CONFIRM]
-  - **What I corrected by hand:** [AUTHOR TO CONFIRM]
+  - **Step:** Implementation, test automation, training pipeline, and packaging
+  - **What it did:** Wrote and executed the model training and ONNX export scripts, telemetry logging endpoints, client-side runtime adaptation, and Cypress test suites under strictly pre-registered constraints (fixed accuracy threshold before training; specifications and v1 test assertions off-limits to modification).
+  - **What I corrected / steered:** Reviewed every git diff, rejected an artificially deflated CV baseline metric from an initial demo run, and required strict serialization of WebAssembly inferences.
+- **Tool:** Claude (Anthropic, web chat)
+  - **Step:** Milestone planning, agent prompt engineering, and report auditing
+  - **What it did:** Assisted in structuring the execution steps, drafting constrained agent prompts, and reviewing agent execution reports.
+  - **What I corrected / steered:** Caught the anomalous 0.3033 baseline in the first demo model run, and diagnosed the session continuity bug where restart paths ("Play again", "Change my answers") reused previous session IDs.
+- **Manual Work (By hand):**
+  - **Telemetry Collection:** Collected 15 live gameplay sessions from three participants across sequential playthroughs.
+  - **Pre-Registration:** Formulated the classification target (`chose_risky`), strictly ordered the 7 features, fixed model hyperparameters, and set the 0.60 evaluation gate threshold prior to inspecting any data.
+  - **Evaluation & Release:** Preserved the real-data evaluation failure as the permanent scientific record, decided to publish a clearly labeled synthetic demo model to showcase the end-to-end runtime pipeline, and authored the differential testing exam design.
 
