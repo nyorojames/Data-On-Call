@@ -434,3 +434,34 @@ def test_real_train_py_fails_gate_and_leaves_model_dir_unchanged():
     assert get_hash(config_path) == config_hash_before
     if readme_hash_before:
         assert get_hash(readme_path) == readme_hash_before
+
+
+def test_demo_model_baseline_accuracy_matches_majority_class():
+    """Verify that baseline_accuracy in model/config.json is >= 0.5 and equals the majority-class accuracy of the data used."""
+    config_path = Path("model") / "config.json"
+    assert config_path.is_file(), "model/config.json must exist"
+
+    with open(config_path, mode="r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    baseline_acc = cfg.get("baseline_accuracy")
+    assert baseline_acc is not None
+    assert baseline_acc >= 0.50, f"baseline_accuracy ({baseline_acc}) must be >= 0.50"
+
+    # Compute majority-class accuracy of data/synthetic_dev.csv
+    data_path = Path("data") / "synthetic_dev.csv"
+    assert data_path.is_file(), "data/synthetic_dev.csv must exist"
+
+    with open(data_path, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        labels = [int(r["chose_risky"]) for r in reader]
+
+    count_0 = labels.count(0)
+    count_1 = labels.count(1)
+    majority_count = max(count_0, count_1)
+    expected_majority_acc = round(majority_count / len(labels), 4)
+
+    assert round(baseline_acc, 4) == expected_majority_acc, (
+        f"baseline_accuracy in config ({baseline_acc}) must equal "
+        f"dataset majority-class accuracy ({expected_majority_acc})"
+    )
