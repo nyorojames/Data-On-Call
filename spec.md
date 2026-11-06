@@ -178,13 +178,13 @@ Fixed strictly prior to training:
 - **Threshold Gate:** Accuracy must be at least **0.60** AND strictly higher than the majority-class baseline.
 - If the model fails to meet both criteria, the training gate fails and `model.onnx` is not published.
 
-### 10.4 Runtime Behavior Change
-- At the start of a scene, the ONNX model computes $P(\text{chose\_risky} = 1)$.
-- If predicted risk $\ge 0.5$:
-  - The AI tutor proactively displays a guiding question before the player makes their selection.
-  - If the player is in Experienced mode, the 60-second countdown timer pauses to allow reflection.
-- If predicted risk $< 0.5$:
-  - Gameplay behavior remains unchanged (standard v1 behavior).
+### 10.4 Runtime Behavior Change (Amended 2026-11-06)
+> *Note (2026-11-06, written before implementation):* The adaptation is driven by a synthetic DEMO model and must be clearly labeled as such in the UI.
+- At the start of each scene, the in-browser model computes predicted risk $p = P(\text{chose\_risky} = 1)$.
+- **Proactive Question ($p \ge 0.5$):** If $p \ge 0.5$ (`PROACTIVE_CUTOFF`), the AI tutor proactively displays a guiding question before the player makes their selection (using the decision's existing hint question).
+- **Timer Relief ($p \ge 0.75$):** If $p \ge 0.75$ (`TIMER_RELIEF_CUTOFF`) and the player is in Experienced mode, the countdown timer is paused to allow reflection under elevated risk. For $0.5 \le p < 0.75$, the proactive question is shown while the timer continues running.
+- **Unchanged Baseline ($p < 0.5$):** If $p < 0.5$, no adaptive change occurs (standard v1 behavior).
+- **Graceful Fallback:** If model loading or inference fails for any reason, the game operates under standard v1 behavior without surfacing errors.
 
 ### 10.5 Acceptance Examples
 
@@ -193,10 +193,13 @@ Fixed strictly prior to training:
 - When `train.py` executes cross-validation and accuracy is below 0.60 or does not exceed the majority-class baseline
 - Then `train.py` exits with a non-zero error code and writes no `model.onnx` artifact.
 
-**AC9: Proactive adaptation on elevated risk**
+**AC9: Proactive adaptation on elevated risk (Amended 2026-11-06)**
 - Given an active playthrough at the start of a scene
-- When the runtime model evaluates the scene start features and predicts risk $\ge 0.5$
-- Then the tutor surfaces a proactive guiding question before a choice is made, and an Experienced player's timer is paused.
+- When the runtime model evaluates the scene start features and predicts risk $p$:
+  - If $p \ge 0.5$: the tutor surfaces a proactive guiding question in a dedicated element (`data-testid="proactive-question"`) before a choice is made;
+  - If $p \ge 0.75$ and the level is Experienced: the countdown timer is paused;
+  - If $p < 0.5$: behavior remains unchanged from v1;
+  - The UI displays an adaptive tutor status line explicitly identifying the prediction as driven by a synthetic demo model.
 
 **AC10: Model inference parity**
 - Given the 5 benchmark feature vectors defined in `tests/parity.json`
