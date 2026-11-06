@@ -48,6 +48,7 @@ from train import (
 )
 
 GENERATOR_RULE_DESCRIPTION = (
+    "Base log-odds intercept -0.85 (~46% risky rate). "
     "Risk probability rises with Experienced level (+1.3 log-odds), "
     "previous risky choices (+0.9 log-odds), and previous timeouts (+1.1 log-odds), "
     "and falls with prior hints requested (-1.3 log-odds), subject to Gaussian noise (mean 0.0, std 0.45)."
