@@ -10,8 +10,8 @@
       0,
       0.0
     ],
-    "expected_probability": 0.336381,
-    "sklearn_probability": 0.336381,
+    "expected_probability": 0.319364,
+    "sklearn_probability": 0.319364,
     "parity_diff": 2.98e-08
   },
   {
@@ -25,23 +25,23 @@
       0,
       15.2
     ],
-    "expected_probability": 0.166585,
-    "sklearn_probability": 0.166585,
-    "parity_diff": 2.98e-08
+    "expected_probability": 0.058888,
+    "sklearn_probability": 0.058888,
+    "parity_diff": 7.5e-09
   },
   {
-    "description": "Beginner player in scene 3 with 1 prior risky choice and AI goal (near 0.5 threshold)",
+    "description": "Experienced player starting scene 1 with internship goal (moderate risk: 0.4-0.6, not near 0.5)",
     "features": [
-      0,
-      2,
-      3,
+      1,
       0,
       1,
       0,
-      28.5
+      0,
+      0,
+      0.0
     ],
-    "expected_probability": 0.499578,
-    "sklearn_probability": 0.499578,
+    "expected_probability": 0.563812,
+    "sklearn_probability": 0.563812,
     "parity_diff": 0.0
   },
   {
@@ -55,9 +55,9 @@
       0,
       28.4
     ],
-    "expected_probability": 0.730616,
-    "sklearn_probability": 0.730616,
-    "parity_diff": 5.96e-08
+    "expected_probability": 0.769459,
+    "sklearn_probability": 0.769459,
+    "parity_diff": 0.0
   },
   {
     "description": "Experienced player in scene 3 following multiple risky choices and a timeout (very high risk)",
@@ -70,8 +70,8 @@
       1,
       60.0
     ],
-    "expected_probability": 0.884876,
-    "sklearn_probability": 0.884876,
-    "parity_diff": 0.0
+    "expected_probability": 0.824737,
+    "sklearn_probability": 0.824737,
+    "parity_diff": 5.96e-08
   }
 ]

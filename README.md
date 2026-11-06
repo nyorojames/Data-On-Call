@@ -103,7 +103,7 @@ npm run app
 ## Synthetic Data Generation (v2 Development)
 - **Script:** `scripts/make_synthetic.py`
 - **Pre-registered Seed:** `42`
-- **Generative Rule:** Generates ~100 sessions with 3 scenes each (~300 rows total). Risk probability $P(\text{chose\_risky} = 1)$ increases with Experienced level (`level = 1`, +1.3 log-odds), previous risky choices (`prev_risky_count`, +0.9 log-odds), and previous timeouts (`prev_timeout_count`, +1.1 log-odds), and decreases with prior hints requested (`prev_hints_used`, -1.3 log-odds), subject to Gaussian noise.
+- **Generative Rule:** Generates ~100 sessions with 3 scenes each (~300 rows total). Base log-odds intercept is `-0.85` (targeting ~46% risky rate across the simulated population). Risk probability $P(\text{chose\_risky} = 1)$ increases with Experienced level (`level = 1`, +1.3 log-odds), previous risky choices (`prev_risky_count`, +0.9 log-odds), and previous timeouts (`prev_timeout_count`, +1.1 log-odds), and decreases with prior hints requested (`prev_hints_used`, -1.3 log-odds), subject to Gaussian noise.
 - **Noise Mode:** When invoked with `--noise-only`, labels are generated as unbiased random coin flips ($p = 0.5$) independent of features to verify evaluation gate rejection under AC8.
 - **Safety Guard:** The generator strictly refuses to write synthetic rows into `data/sessions.csv`.
 
