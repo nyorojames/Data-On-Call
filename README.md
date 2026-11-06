@@ -2,8 +2,15 @@
 
 Data On-Call is a mobile-first scenario game where the player acts as the on-call data engineer resolving a critical telemetry incident at a synthetic Kenyan electric-motorcycle battery-swap network. Built for junior data engineers, each decision carries visible production consequences that teach pipeline architecture, data quality verification, and privacy protection under real-world time pressure. An integrated AI tutor powered by Gemini (using the `gemini-3.5-flash` model) provides Socratic guidance through hints and questions without ever revealing the answers.
 
-**AI Studio Applet Link:** https://ai.studio/apps/5e740619-2393-4262-bc39-799452da29b0  
-**Demo Walkthrough Video:** Available via `npm run demo` (generates `cypress/videos/demo.mp4`)
+---
+
+## Links
+
+- **Live Application:** [TODO live app URL]
+- **Demo Walkthrough Video:** [TODO demo video URL]
+- **Hugging Face Model Repository:** https://huggingface.co/Nyoro012/data-on-call-demo-model
+- **Commit-Pinned Hugging Face Model URL:** https://huggingface.co/Nyoro012/data-on-call-demo-model/resolve/59593ba0b88e0bc087ff8f66f3899120e7c35cec/
+- **AI Studio Applet Link:** https://ai.studio/apps/5e740619-2393-4262-bc39-799452da29b0
 
 ---
 
@@ -20,6 +27,7 @@ Data On-Call is a mobile-first scenario game where the player acts as the on-cal
 | `tests/parite.json` | `tests/parity.json` | Benchmark feature vectors for probability parity verification |
 | `tests/parite.py` | `tests/parity.py` | Parity verification script comparing Python and web ONNX predictions |
 | `SINAV_TASARIMI.md` | `EXAM_DESIGN.md` | Exam and scenario design documentation |
+| — | `RELEASE.md` | Release notes, rollout plan, rollback triggers, and production architecture |
 | Column: `kaynak` | Column: `source` | Telemetry provenance field (`"real"` or `"synthetic"`) |
 
 ---
@@ -218,3 +226,31 @@ When the Gemini API free-tier quota resets, run the following steps to collect t
 - **Dev Server Startup**: The first Cypress run can be slow because the dev server compiles on first load; the suite includes a warm-up step.
 - **Session Progress Persistence**: State is stored in memory during the active browser session. Refreshing the browser returns to the intake screen; no persistent user database or external authentication is utilized (in accordance with spec scope).
 - **Audio Feedback**: The application focuses on responsive mobile visual elements (countdown timer, monospace clock, status indicators, animated sheets) and does not play audio alerts.
+
+---
+
+## Environment Variables
+
+| Variable | Default | Purpose / Scope |
+|---|---|---|
+| `VITE_MODEL_BASE_URL` | `/model/` | Base URL route from which `model.onnx` and `config.json` are fetched. In production builds, set to the commit-pinned Hugging Face URL in `.env.production`. |
+| `VITE_MODEL_ENABLED` | `true` | Emergency kill-switch and rollback toggle. When set to `false` or `0`, client-side model loading and inference are completely bypassed, returning the application immediately to pure v1 gameplay behavior. |
+| `VITE_BASE` | `/` | Base path for static asset hosting (e.g. `/Data-On-Call/` for GitHub Pages). |
+| `DATA_COLLECTION` | `0` | Server-side flag (`1` enables anonymous telemetry collection to `data/sessions.csv` bound to `0.0.0.0`). |
+| `GEMINI_API_KEY` | — | Google Gemini API key required only for live generative tutor replies in Node dev server mode. |
+
+---
+
+## AI Tools Used
+
+The following table records AI assistant tooling utilized across project development phases:
+
+- **Tool:** Antigravity (Google DeepMind)
+  - **Step:** [AUTHOR TO CONFIRM]
+  - **What it did:** [AUTHOR TO CONFIRM]
+  - **What I corrected by hand:** [AUTHOR TO CONFIRM]
+- **Tool:** Gemini 3.5 Flash / Google AI Studio
+  - **Step:** [AUTHOR TO CONFIRM]
+  - **What it did:** [AUTHOR TO CONFIRM]
+  - **What I corrected by hand:** [AUTHOR TO CONFIRM]
+
